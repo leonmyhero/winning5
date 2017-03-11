@@ -1,0 +1,472 @@
+Option Compare Database
+Option Explicit
+
+Type matchDetail
+    tournamentENG As String
+    tournamentCHN As String
+    HTeamENG As String
+    ATeamCHN As String
+    HTeamCHN As String
+    ATeamENG As String
+End Type
+
+Type matchTA
+    tournament As String
+    offset As Integer
+End Type
+
+Type SportsTD
+
+    hteam As String
+    ateam As String
+    fscore As String
+    hscore As String
+    matchtime As String
+    tournament As String
+    hfscore As Integer
+    afscore As Integer
+    hhscore As Integer
+    ahscore As Integer
+    
+End Type
+
+Public EventDetail() As matchDetail
+
+Sub catchENGname()
+
+    Dim rs As Recordset
+    Dim obrowser As WebBrowser
+    Dim ht As HTMLDocument
+    Dim em As HTMLDDElement
+    Dim x As Integer
+    Dim ta() As matchTA
+    Dim y As Integer
+    Dim i As Integer
+    Dim hteam As String
+    Dim ateam As String
+    Dim ed As Variant
+    Dim n As Integer
+    
+    'Set obrowser = Form_Form5.WebBrowser_bet.Object
+    Set ht = obrowser.Document
+    
+    x = 0
+    For Each em In ht.getElementsByClassName("gl-MarketGroupButton cm-CouponMarketGroupButton gl-MarketGroup_Open")
+        ReDim Preserve ta(0 To x)
+        ta(x).tournament = em.innerText
+        ta(x).offset = em.parentElement.offsetTop
+        x = x + 1
+    Next
+    
+    x = 1
+    y = 0
+    
+    
+    
+    If ht.getElementsByClassName("sl-CouponParticipantGameLineTwoWay_NameText").length = 0 Then
+
+        For Each em In ht.getElementsByClassName("sl-CouponParticipantWithBookCloses_Name")
+            Debug.Print em.innerText
+            i = InStr(1, em.innerText, " v ", vbTextCompare)
+            If i > 0 Then
+                ReDim Preserve EventDetail(0 To y)
+                hteam = Left(em.innerText, i)
+                ateam = Mid(em.innerText, i + 3, 20)
+                EventDetail(y).HTeamENG = hteam
+                EventDetail(y).ATeamENG = ateam
+                
+                For i = 0 To UBound(ta)
+                    If em.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.offsetTop = ta(i).offset Then
+                        EventDetail(y).tournamentENG = ta(i).tournament
+                        Exit For
+                    End If
+                Next
+                y = y + 1
+            
+            ElseIf InStr(1, em.innerText, "-", vbTextCompare) > 0 Then
+                ReDim Preserve EventDetail(0 To y)
+                ed = ""
+                ed = Split(em.innerText, " ", , vbTextCompare)
+                For n = 0 To UBound(ed)
+                    If InStr(1, ed(n), "-", vbTextCompare) > 0 And Len(ed(n)) = 3 Then
+                        Exit For
+                    End If
+                Next
+                i = InStr(1, em.innerText, ed(n), vbTextCompare)
+                hteam = Left(em.innerText, i - 1)
+                ateam = Mid(em.innerText, i + 4, 20)
+                EventDetail(y).HTeamENG = hteam
+                EventDetail(y).ATeamENG = ateam
+                
+                For i = 0 To UBound(ta)
+                    If em.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.offsetTop = ta(i).offset Then
+                        EventDetail(y).tournamentENG = ta(i).tournament
+                        Exit For
+                    End If
+                Next
+                y = y + 1
+            
+            End If
+        Next
+    Else
+    
+        ReDim Preserve EventDetail(0 To y)
+        For Each em In ht.getElementsByClassName("sl-CouponParticipantGameLineTwoWay_NameText")
+            Debug.Print "no"
+            Debug.Print em.innerText
+            Debug.Print em.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.offsetTop
+            If x Mod 3 = 0 Then
+                y = y + 1
+                ReDim Preserve EventDetail(0 To y)
+            Else
+                If x Mod 3 = 1 Then
+                    EventDetail(y).HTeamENG = em.innerText
+                Else
+                    EventDetail(y).ATeamENG = em.innerText
+                    
+                    For i = 0 To UBound(ta)
+                        If em.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.offsetTop = ta(i).offset Then
+                            EventDetail(y).tournamentENG = ta(i).tournament
+                            Exit For
+                        End If
+                    Next
+                End If
+            End If
+            x = x + 1
+        Next
+        
+    End If
+    
+    Set rs = CurrentDb.OpenRecordset("select * from tableteamname where matchdatestr = '" & Date & "'")
+    
+    For x = 0 To UBound(EventDetail)
+        With rs
+            .AddNew
+            ![matchDatestr] = Date
+            ![matchnameENG] = EventDetail(x).HTeamENG & " v " & EventDetail(x).ATeamENG
+            ![tournamentENG] = EventDetail(x).tournamentENG
+            ![HTeamENG] = EventDetail(x).HTeamENG
+            ![ATeamENG] = EventDetail(x).ATeamENG
+            '![MatchNameCHN] = EventDetail(x).HTeamCHN & " v " & EventDetail(x).ATeamCHN
+            '![tournamentCHN] = EventDetail(x).tournamentCHN
+            '![HTeamCHN] = EventDetail(x).HTeamCHN
+            '![ATeamCHN] = EventDetail(x).ATeamCHN
+            .Update
+        End With
+    Next
+    
+    rs.Close
+    Set rs = Nothing
+    
+End Sub
+
+Sub catchCHNname()
+    
+    Dim rs As Recordset
+    Dim obrowser As WebBrowser
+    Dim ht As HTMLDocument
+    Dim em As HTMLDDElement
+    Dim x As Integer
+    Dim ta() As matchTA
+    Dim y As Integer
+    Dim i As Integer
+    Dim hteam As String
+    Dim ateam As String
+    Dim ed As Variant
+    Dim n As Integer
+    
+    'Set obrowser = Form_Form5.WebBrowser_bet.Object
+    Set ht = obrowser.Document
+    
+    x = 0
+    For Each em In ht.getElementsByClassName("gl-MarketGroupButton cm-CouponMarketGroupButton gl-MarketGroup_Open")
+        ReDim Preserve ta(0 To x)
+        ta(x).tournament = em.innerText
+        ta(x).offset = em.parentElement.offsetTop
+        x = x + 1
+    Next
+    
+    x = 1
+    y = 0
+    
+    
+    
+    If ht.getElementsByClassName("sl-CouponParticipantGameLineTwoWay_NameText").length = 0 Then
+
+        For Each em In ht.getElementsByClassName("sl-CouponParticipantWithBookCloses_Name")
+            Debug.Print em.innerText
+            i = InStr(1, em.innerText, " v ", vbTextCompare)
+            If i > 0 Then
+                ReDim Preserve EventDetail(0 To y)
+                hteam = Left(em.innerText, i)
+                ateam = Mid(em.innerText, i + 3, 20)
+                EventDetail(y).HTeamCHN = hteam
+                EventDetail(y).ATeamCHN = ateam
+                
+                For i = 0 To UBound(ta)
+                    If em.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.offsetTop = ta(i).offset Then
+                        EventDetail(y).tournamentCHN = ta(i).tournament
+                        Exit For
+                    End If
+                Next
+                y = y + 1
+            
+            ElseIf InStr(1, em.innerText, "-", vbTextCompare) > 0 Then
+                ReDim Preserve EventDetail(0 To y)
+                ed = ""
+                ed = Split(em.innerText, " ", , vbTextCompare)
+                For n = 0 To UBound(ed)
+                    If InStr(1, ed(n), "-", vbTextCompare) > 0 And Len(ed(n)) = 3 Then
+                        Exit For
+                    End If
+                Next
+                i = InStr(1, em.innerText, ed(n), vbTextCompare)
+                hteam = Left(em.innerText, i - 1)
+                ateam = Mid(em.innerText, i + 4, 20)
+                EventDetail(y).HTeamCHN = hteam
+                EventDetail(y).ATeamCHN = ateam
+                
+                For i = 0 To UBound(ta)
+                    If em.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.offsetTop = ta(i).offset Then
+                        EventDetail(y).tournamentCHN = ta(i).tournament
+                        Exit For
+                    End If
+                Next
+                y = y + 1
+            
+            End If
+        Next
+    Else
+    
+        ReDim Preserve EventDetail(0 To y)
+        
+        For Each em In ht.getElementsByClassName("sl-CouponParticipantGameLineTwoWay_NameText")
+            Debug.Print "no"
+            Debug.Print em.innerText
+            Debug.Print em.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.offsetTop
+            If x Mod 3 = 0 Then
+                y = y + 1
+                ReDim Preserve EventDetail(0 To y)
+            Else
+                If x Mod 3 = 1 Then
+                    EventDetail(y).HTeamCHN = em.innerText
+                Else
+                    EventDetail(y).ATeamCHN = em.innerText
+                    
+                    For i = 0 To UBound(ta)
+                        If em.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.offsetTop = ta(i).offset Then
+                            EventDetail(y).tournamentCHN = ta(i).tournament
+                            Exit For
+                        End If
+                    Next
+                End If
+            End If
+            x = x + 1
+        Next
+        
+    End If
+    
+    Set rs = CurrentDb.OpenRecordset("select * from tableteamname where matchdatestr = '" & Date & "'")
+    
+    For x = 0 To UBound(EventDetail)
+        With rs
+            .Edit
+            '![matchDatestr] = Date
+            '![matchnameENG] = EventDetail(x).HTeamENG & " v " & EventDetail(x).ATeamENG
+            '![tournamentENG] = EventDetail(x).tournamentENG
+            '![HTeamENG] = EventDetail(x).HTeamENG
+            '![ATeamENG] = EventDetail(x).ATeamENG
+            ![MatchNameCHN] = EventDetail(x).HTeamCHN & " v " & EventDetail(x).ATeamCHN
+            ![tournamentCHN] = EventDetail(x).tournamentCHN
+            ![HTeamCHN] = EventDetail(x).HTeamCHN
+            ![ATeamCHN] = EventDetail(x).ATeamCHN
+            .Update
+        End With
+        If Not rs.EOF Then
+            rs.MoveNext
+        End If
+    Next
+    
+    rs.Close
+    Set rs = Nothing
+    
+End Sub
+
+Sub calculateBAP()
+
+    Dim rs As Recordset
+    Dim q1p As Long
+    Dim q2p As Long
+    Dim q3p As Long
+    Dim q4p As Long
+    Dim q1r As Double
+    Dim q2r As Double
+    Dim q3r As Double
+    Dim q4r As Double
+    
+    Dim total As Long
+    
+    total = DCount("matchid", "tablebat")
+    
+    Set rs = CurrentDb.OpenRecordset("select sum(HScore) as totalhomescore, sum(AScore) as totalawayscore from tablebas where matchtime = '1st Quarter'")
+    
+    rs.MoveLast
+    
+    q1p = rs.Fields(0).Value + rs.Fields(1).Value
+    
+
+    
+    rs.Close
+    Set rs = Nothing
+    
+    Set rs = CurrentDb.OpenRecordset("select sum(HScore) as totalhomescore, sum(AScore) as totalawayscore from tablebas where matchtime = '2nd Quarter'")
+    
+    rs.MoveLast
+    
+    q2p = rs.Fields(0).Value + rs.Fields(1).Value - q1p
+
+    rs.Close
+    Set rs = Nothing
+    
+    Set rs = CurrentDb.OpenRecordset("select sum(HScore) as totalhomescore, sum(AScore) as totalawayscore from tablebas where matchtime = '3rd Quarter'")
+    
+    rs.MoveLast
+    
+    q3p = rs.Fields(0).Value + rs.Fields(1).Value - q2p - q1p
+
+    rs.Close
+    Set rs = Nothing
+    
+    Set rs = CurrentDb.OpenRecordset("select sum(HScore) as totalhomescore, sum(AScore) as totalawayscore from tablebas where matchtime = '4th Quarter'")
+    
+    rs.MoveLast
+    
+    q4p = rs.Fields(0).Value + rs.Fields(1).Value - q1p - q2p - q3p
+
+    rs.Close
+    Set rs = Nothing
+    
+    
+    Debug.Print q1p, q2p, q3p, q4p
+    
+    Debug.Print total
+    
+    q1r = Format((q1p / total) / 600, "#.###")
+    q2r = Format((q2p / total) / 600, "#.###")
+    q3r = Format((q3p / total) / 600, "#.###")
+    q4r = Format((q4p / total) / 600, "#.###")
+
+    Debug.Print q1r, q2r, q3r, q4r
+    
+End Sub
+
+Sub FetchSportsTD(matchdate As Date)
+
+    Dim rs As Recordset
+    Dim obrowser As WebBrowser
+    Dim hteam As String
+    Dim ateam As String
+    Dim fscore As String
+    Dim hscore As String
+    Dim matchtime As String
+    'Dim matchdate As Date
+    Dim tournament As String
+    Dim hfscore As Integer
+    Dim afscore As Integer
+    Dim hhscore As Integer
+    Dim ahscore As Integer
+    Dim fd() As SportsTD
+    Dim ht As HTMLDocument
+    Dim em As HTMLDDElement
+    Dim tr As HTMLDDElement
+    Dim td As HTMLDDElement
+    Dim startposition As Long
+    Dim endposition As Long
+    Dim eventdate As String
+    Dim i As Integer
+    Dim x As Integer
+    
+    'Set obrowser = Form_FormSportsDT.WebBrowser0.Object
+    Set ht = obrowser.Document
+    
+    'matchdate = Me.txt_date
+    
+    startposition = 0
+    endposition = 50000
+    
+    i = ht.getElementsByClassName("date").length
+    Debug.Print i
+    endposition = ht.getElementsByClassName("date")(i - 1).offsetTop
+    Debug.Print startposition, endposition
+    
+    For Each em In ht.getElementsByClassName("date")
+        If em.innerText <> "" Then
+            eventdate = Left(em.innerText, 10)
+            
+            If IsDate(eventdate) Then
+                'Debug.Print eventdate
+                If eventdate = Format(matchdate, "dd/mm/yyyy") Then
+                    startposition = em.offsetTop
+                End If
+                If CDate(eventdate) > matchdate Then
+                    endposition = em.offsetTop
+                End If
+            End If
+        End If
+    Next
+    
+    If endposition = 0 Then
+        endposition = 5000
+    End If
+    
+    i = 0
+    For Each em In ht.getElementsByTagName("tr")
+        If em.offsetTop > startposition And em.offsetTop < endposition Then
+            If em.className = "tbg0" Or em.className = "tbg1" Then
+                ReDim Preserve fd(0 To i)
+                fd(i).tournament = em.getElementsByTagName("td")(0).innerText
+                fd(i).matchtime = em.getElementsByTagName("td")(1).innerText
+                fd(i).hteam = em.getElementsByTagName("td")(2).getElementsByTagName("a")(0).innerText
+                fd(i).ateam = em.getElementsByTagName("td")(4).getElementsByTagName("a")(0).innerText
+                fd(i).fscore = em.getElementsByTagName("td")(3).innerText
+                fd(i).hscore = em.getElementsByTagName("td")(5).innerText
+                x = InStr(1, fd(i).fscore, "-", vbTextCompare)
+                If x > 0 Then
+                    fd(i).hfscore = Left(fd(i).fscore, x - 1)
+                    fd(i).afscore = Mid(fd(i).fscore, x + 1, 2)
+                End If
+                x = InStr(1, fd(i).hscore, "-", vbTextCompare)
+                If x > 0 Then
+                    fd(i).hhscore = Left(fd(i).hscore, x - 1)
+                    fd(i).ahscore = Mid(fd(i).hscore, x + 1, 2)
+                End If
+                i = i + 1
+            End If
+        End If
+    Next
+    
+    Set rs = CurrentDb.OpenRecordset("select * from TableSportsDT where matchdateStr = '" & matchdate & "'")
+    For x = 0 To UBound(fd)
+        With rs
+        .AddNew
+        ![matchdate] = matchdate
+        ![matchDatestr] = matchdate
+        ![matchname] = fd(x).hteam & " v " & fd(x).ateam
+        ![hteam] = fd(x).hteam
+        ![ateam] = fd(x).ateam
+        ![matchtime] = fd(x).matchtime
+        ![tournament] = fd(x).tournament
+        ![fullresult] = fd(x).fscore
+        ![halfresult] = fd(x).hscore
+        ![hfscore] = fd(x).hfscore
+        ![afscore] = fd(x).afscore
+        ![hhscore] = fd(x).hhscore
+        ![ahscore] = fd(x).ahscore
+        .Update
+        End With
+    Next
+    
+    rs.Close
+    Set rs = Nothing
+    
+End Sub
