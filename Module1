@@ -1,0 +1,136 @@
+Option Compare Database
+Type playerlink
+player As String
+url As String
+End Type
+
+
+Public Function GetTextFromClipboard() As String
+    Dim objClipboard As Object
+    On Error Resume Next
+    Set objClipboard = CreateObject("new:{1C3B4210-F441-11CE-B9EA-00AA006B1A69}")
+    objClipboard.GetFromClipboard
+    GetTextFromClipboard = objClipboard.getText
+    Set objClipboard = Nothing
+End Function
+
+Sub runfunction()
+
+    Dim string1 As String
+    Dim x As Integer
+    Dim y As Integer
+    Dim rs As Recordset
+    Dim target As String
+    
+    target = "abcdefghijklmnopqrstuvwxyz"
+    target2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    
+    string1 = DLookup("field1", "table1", "id=23")
+    Set rs = CurrentDb.OpenRecordset("select * from table1")
+    Debug.Print Len(string1)
+    For x = 1 To Len(target2)
+        Debug.Print Mid(target2, x, 1), Asc(Mid(target2, x, 1))
+    '    With rs
+    '    .AddNew
+    '    !field1 = x
+    '    !Field2 = Mid(string1, (x + 1) * 15, 15)
+    '    .Update
+    '    End With
+    Next
+    
+    'rs.Close
+    'Set rs = Nothing
+    
+End Sub
+
+Function convertt(source As String) As String
+    
+    Dim so1 As String
+    Dim so2 As String
+    Dim ta As String
+    Dim x As Integer
+    Dim y As Integer
+    
+    so1 = DLookup("field1", "table1", "id=1")
+    so2 = DLookup("field1", "table1", "id=23")
+    
+    For x = 1 To Len(source)
+        If IsNumeric(Mid(source, x, 1)) Then
+            y = x + Asc(Mid(source, x, 1))
+            convertt = convertt & Mid(so1, y, 1)
+        Else
+            y = x + Asc(Mid(source, x, 1))
+            convertt = convertt & Mid(so2, y, 1)
+        End If
+    Next
+    
+End Function
+
+Function convertc(source As String) As String
+    
+    Dim so1 As String
+    Dim so2 As String
+    Dim ta As String
+    Dim x As Integer
+    Dim y As Integer
+    Dim i As Integer
+    Dim ca As String
+    
+    so1 = DLookup("field1", "table1", "id=1")
+    so2 = DLookup("field1", "table1", "id=23")
+    
+    For x = 1 To Len(source)
+        ca = Mid(source, x, 1)
+        If InStr(1, so1, ca, vbTextCompare) > 0 Then
+            y = InStr(1, so1, ca, vbTextCompare)
+            i = y - x
+            convertc = convertc & Chr(i)
+        ElseIf InStr(1, so2, ca, vbTextCompare) > 0 Then
+            y = InStr(1, so2, ca, vbTextCompare)
+            i = y - x
+            convertc = convertc & Chr(i)
+        Else
+            convertc = convertc & ca
+        End If
+    Next
+    
+End Function
+
+Sub removeduplicateusername(ByRef initialarray() As String)
+
+    On Error Resume Next
+    
+    Dim newArray() As String
+    Dim i As Integer
+    Dim j As Integer
+    
+    For i = 0 To UBound(initialarray)
+    For j = 0 To UBound(initialarray)
+    If Not initialarray(i) = "" Then
+    If Not j = i Then
+    If initialarray(i) = initialarray(j) Then
+    initialarray(j) = ""
+    End If
+    End If
+    End If
+    Next
+    Next
+    
+    j = 0
+    For i = 0 To UBound(initialarray)
+    If Not initialarray(i) = "" Then
+    ReDim Preserve newArray(j)
+    newArray(j) = initialarray(i)
+    j = j + 1
+    End If
+    Next
+    
+    ReDim initialarray(0 To UBound(newArray)) As String
+    
+    For i = 0 To UBound(newArray)
+    initialarray(i) = newArray(i)
+    
+    Next
+
+End Sub
+
