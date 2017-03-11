@@ -1,0 +1,92 @@
+EventDate  Date/Time  short date
+EventName  Text
+Q1T  Number  single
+Q1H  Number
+Q1A  Number
+Q2T Number
+Q2H Number
+Q2A Num
+Q3T Number
+Q3H Number
+Q3A Num
+Q4T Number
+Q4H Number
+Q4A Num
+H1T Number
+H1H Number
+H1A Num
+H2T Number
+H2H Number
+H2A Num
+TT Number
+TH Number
+TA Num
+UpdateTime Date/Time
+Q1M Text
+Q2M Text
+Q3M Text
+Q4M Text
+H1M Text
+H2M Text
+FM Text
+Q1S Number Integer
+Q1HS Number
+Q1AS Number
+Q2S Number Integer
+Q2HS Number
+Q2AS Number
+Q3S Number Integer
+Q3HS Number
+Q3AS Number
+Q4S Number Integer
+Q4HS Number
+Q4AS Number
+H1S Number Integer
+H1HS Number
+H1AS Number
+H2S Number Integer
+H2HS Number
+H2AS Number
+FS Number Integer
+FHS Number
+FAS Number
+Q1TIME Date/Time
+Q2TIME Date/Time
+Q3TIME Date/Time
+Q4TIME Date/Time
+Q1Spread Num Single
+Q2Spread Num Single
+Q3Spread Num Single
+Q4Spread Num Single
+H1Spread Num Single
+H2Spread Num Single
+FSpread Num Single
+Q1Tpoint Num Single
+Q2Tpoint Num Single
+Q3Tpoint Num Single
+Q4Tpoint Num Single
+H1Tpoint Num Single
+H2Tpoint Num Single
+FTpoint Num Single
+Q1Hpoint Number Single
+Q1Apoint Number Single
+Q2Hpoint Number Single
+Q2Apoint Number Single
+Q3Hpoint Number Single
+Q3Apoint Number Single
+Q4Hpoint Number Single
+Q4Apoint Number Single
+H1Hpoint Number Single
+H1Apoint Number Single
+H2Hpoint Number Single
+H2Apoint Number Single
+FHpoint Number Single
+FApoint Number Single
+Q1TimeUsed Num Int
+Q2TimeUsed Num Int
+Q3TimeUsed Num Int
+Q4TimeUsed Num Int
+H1TimeUsed Num Int
+H2TimeUsed Num Int
+FTimeUsed Num Int
+Rate Num Int
