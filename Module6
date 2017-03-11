@@ -1,0 +1,45 @@
+Option Compare Database
+
+Option Explicit
+
+Sub readbasketballmatchlist()
+    Dim obrowser As WebBrowser
+    Dim ht As HTMLDocument
+    Dim x As Integer
+    Dim en As HTMLLIElement
+    Dim pm As HTMLLIElement
+    Dim em As HTMLLIElement
+    Dim bm As HTMLLIElement
+    Set obrowser = Form_Form2.WebBrowser0.Object
+    Set ht = obrowser.Document
+    
+    For Each en In ht.getElementsByClassName("ipn-ClassificationButton")
+        'Debug.Print en.innerText
+        If InStr(1, en.innerText, "Basketball", vbTextCompare) > 0 Then
+            'Debug.Print "yes"
+            Set pm = en.parentElement
+            For Each em In pm.getElementsByTagName("div")
+                If em.className = "ipn-Competition ipn-Competition-closed " Then
+                    em.Click
+                End If
+            Next
+            Pause
+            Pause
+            Pause
+            Pause
+            Pause
+            For Each em In pm.getElementsByTagName("div")
+                If em.className = "ipn-FixtureButton " Then
+                    For Each bm In em.getElementsByTagName("div")
+                        If bm.className = "ipn-TeamStack " Then
+                            Debug.Print bm.innerText
+                            
+                        End If
+                    Next
+                End If
+            Next
+            'Debug.Print pm.innerText
+        End If
+    Next
+    
+End Sub
