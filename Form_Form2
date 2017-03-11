@@ -1,0 +1,140 @@
+Option Compare Database
+
+Private Sub btn_deletecurrent_Click()
+    
+    If MsgBox("Are you sure you want to delete?", vbYesNo) = vbNo Then
+        Exit Sub
+    End If
+    
+    CurrentDb.Execute "delete * from TableBADetails where eventname = '" & Me.txt_hteam & " v " & Me.txt_ateam & "'"
+    
+    MsgBox "data deleted."
+End Sub
+
+Private Sub btn_fresh_Click()
+    Me.com_match.Requery
+    
+End Sub
+
+Private Sub btn_report_Click()
+    Dim matchname As String
+    Dim matchtime As String
+    
+    matchname = Me.com_match
+    matchtime = Me.com_matchtime
+    Call generate1stQreport(matchname, matchtime)
+End Sub
+
+Private Sub btn_start_Click()
+    Form_Form2.TimerInterval = 1000
+End Sub
+
+Private Sub btn_stop_Click()
+    Form_Form2.TimerInterval = 0
+End Sub
+
+Private Sub Command159_Click()
+    Dim matchname As String
+    Dim matchtime As String
+    
+    matchname = Me.com_match
+    matchtime = Me.com_matchtime
+    Call generate1stQreport(matchname, matchtime)
+    
+End Sub
+
+Private Sub Command223_Click()
+    If MsgBox("Are you sure you want to delete?", vbYesNo) = vbNo Then
+        Exit Sub
+    End If
+    
+    CurrentDb.Execute "delete * from TableBADetails"
+    
+    MsgBox "data deleted."
+End Sub
+
+Private Sub Form_Timer()
+catchdata
+End Sub
+
+Private Sub lst_1hresult_DblClick(Cancel As Integer)
+    Dim matchname As String
+    matchname = Me.txt_hteam & " v " & Me.txt_ateam
+    Call generate1stQreport(matchname, "H1")
+End Sub
+
+Private Sub lst_1htitle_DblClick(Cancel As Integer)
+    Me.Child_subform.SourceObject = "QueryH1 subform"
+End Sub
+
+Private Sub lst_1qResult_DblClick(Cancel As Integer)
+    Dim matchname As String
+    matchname = Me.txt_hteam & " v " & Me.txt_ateam
+    Call generate1stQreport(matchname, "Q1")
+End Sub
+
+Private Sub lst_1qtitle_DblClick(Cancel As Integer)
+    Me.Child_subform.SourceObject = "QueryQ1 subform"
+End Sub
+
+Private Sub lst_2hresult_DblClick(Cancel As Integer)
+    Dim matchname As String
+    matchname = Me.txt_hteam & " v " & Me.txt_ateam
+    Call generate1stQreport(matchname, "H2")
+End Sub
+
+Private Sub lst_2htitle_DblClick(Cancel As Integer)
+    Me.Child_subform.SourceObject = "QueryH2 subform"
+End Sub
+
+Private Sub lst_2qResult_DblClick(Cancel As Integer)
+    Dim matchname As String
+    matchname = Me.txt_hteam & " v " & Me.txt_ateam
+    Call generate1stQreport(matchname, "Q2")
+End Sub
+
+Private Sub lst_2qtitle_DblClick(Cancel As Integer)
+    Me.Child_subform.SourceObject = "QueryQ2 subform"
+End Sub
+
+Private Sub lst_3qresult_DblClick(Cancel As Integer)
+    Dim matchname As String
+    matchname = Me.txt_hteam & " v " & Me.txt_ateam
+    Call generate1stQreport(matchname, "Q3")
+End Sub
+
+Private Sub lst_3qtitle_DblClick(Cancel As Integer)
+    Me.Child_subform.SourceObject = "QueryQ3 subform"
+End Sub
+
+Private Sub lst_4qresult_DblClick(Cancel As Integer)
+    Dim matchname As String
+    matchname = Me.txt_hteam & " v " & Me.txt_ateam
+    Call generate1stQreport(matchname, "Q4")
+End Sub
+
+Private Sub lst_4qtitle_DblClick(Cancel As Integer)
+    Me.Child_subform.SourceObject = "QueryQ4 subform"
+End Sub
+
+Private Sub lst_totalResult_DblClick(Cancel As Integer)
+    Dim matchname As String
+    matchname = Me.txt_hteam & " v " & Me.txt_ateam
+    Call generate1stQreport(matchname, "Full")
+End Sub
+
+Private Sub lst_totaltile_DblClick(Cancel As Integer)
+    Me.Child_subform.SourceObject = "QueryTotal subform"
+End Sub
+
+Private Sub txt_halfP_AfterUpdate()
+    Me.txt_halfR = Me.txt_halfP / (Me.com_time * 120)
+End Sub
+
+Private Sub txt_quarterP_AfterUpdate()
+    Me.txt_quarterR = Me.txt_quarterP / (Me.com_time * 60)
+End Sub
+
+Private Sub txt_totalP_AfterUpdate()
+    Me.txt_totalR = Me.txt_totalP / (Me.com_time * 240)
+End Sub
