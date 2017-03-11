@@ -1,0 +1,703 @@
+Option Compare Database
+
+Sub readfile(matchdate As Date)
+
+    Dim filename As String, textData As String, textRow As String, fileNo As Integer
+    Dim st As Variant
+    Dim x As Integer
+    Dim rs As Recordset
+    Dim hteam As String
+    Dim ateam As String
+    
+    filename = "I:\Asian Support Department\Asian Customer Account Advisor\member files\FRM PC\Members files\Mingtao Zhang\Toolbox\FIFA\Data\Match.txt"
+    fileNo = FreeFile 'Get first free file number
+    
+    Set rs = CurrentDb.OpenRecordset("select * from TableBetMarket where matchdatestr = '" & matchdate & "'")
+        
+    Open filename For Input As #fileNo
+    Do While Not EOF(fileNo)
+       Line Input #fileNo, textRow
+       Debug.Print textRow
+       st = Split(textRow, ",", , vbTextCompare)
+       x = InStr(1, st(0), " v ", vbTextCompare)
+       
+        hteam = Left(st(0), x - 1)
+        ateam = Mid(st(0), x + 3, 20)
+        Debug.Print Val(st(1)), Val(st(2))
+        With rs
+        .AddNew
+        ![matchdate] = matchdate
+        ![matchDatestr] = matchdate
+        ![matchname] = st(0)
+        ![hteam] = hteam
+        ![ateam] = ateam
+        ![odd15] = Val(st(1))
+        ![odd05] = Val(st(2))
+        ![matchurl] = st(3)
+        ![country] = st(4)
+        ![tournament] = st(5)
+        .Update
+        End With
+       
+       'textData = textData & textRow
+       'Debug.Print textData
+    Loop
+    Close #fileNo
+    
+    rs.Close
+    Set rs = Nothing
+
+End Sub
+
+
+Sub CheckResult(matchdate As String)
+
+    Dim rs As Recordset
+    Dim x As Integer
+    Dim rst As Recordset
+    Dim co As Integer
+    'Dim rss As Recordset
+    Dim goal As Integer
+    Dim result As String
+    
+    Set rs = CurrentDb.OpenRecordset("select * from TableBetMarket where matchdatestr = '" & matchdate & "'")
+    Set rst = CurrentDb.OpenRecordset("select * from Table5 where matchdatestr = '" & matchdate & "'")
+    
+    Do While Not rs.EOF
+        'Debug.Print rs.Fields("hteam").Value, rs.Fields("ateam").Value
+        rst.MoveFirst
+        Do While Not rst.EOF
+            co = 0
+            'Debug.Print rst.Fields("matchname").Value
+            
+            If InStr(1, rst.Fields("matchname").Value, Trim(rs.Fields("hteam").Value), vbTextCompare) > 0 Then
+                'Debug.Print rs.Fields("matchname").Value
+                co = co + 1
+            End If
+            If InStr(1, rst.Fields("matchname").Value, Trim(rs.Fields("ateam").Value), vbTextCompare) > 0 Then
+                co = co + 1
+            End If
+            If co = 2 Then 'found
+                goal = DCount("matchid", "table4", "matchid = '" & rst.Fields("matchid").Value & "' and event = 'Goal'")
+                'Set rss = CurrentDb.OpenRecordset("select * from Table4 where matchID = '" & rst.Fields("matchid").Value & "' and event = 'Goal'")
+                'goal = 0
+                If goal > 0 Then
+                    result = "Won"
+                Else
+                    goal = 0
+                    result = "Lost"
+                End If
+                With rs
+                .Edit
+                ![goal] = goal
+                ![result] = result
+                .Update
+                End With
+            End If
+            
+            rst.MoveNext
+        Loop
+        rs.MoveNext
+    Loop
+    
+    rs.Close
+    Set rs = Nothing
+    
+    rst.Close
+    Set rst = Nothing
+    
+End Sub
+
+Sub CheckResult2(matchdate As String)
+
+    Dim rs As Recordset
+    Dim x As Integer
+    Dim rst As Recordset
+    Dim co As Integer
+    'Dim rss As Recordset
+    Dim goal As Integer
+    Dim result As String
+    
+    Set rs = CurrentDb.OpenRecordset("select * from TableBetMarket where matchdatestr = '" & matchdate & "'")
+    Set rst = CurrentDb.OpenRecordset("select * from TableSportsDT where matchdatestr = '" & matchdate & "'")
+    
+    Do While Not rs.EOF
+
+        rst.MoveFirst
+        Do While Not rst.EOF
+            co = 0
+            Debug.Print rst.Fields("matchname").Value
+            
+            If InStr(1, rst.Fields("matchname").Value, Trim(rs.Fields("hteam").Value), vbTextCompare) > 0 Then
+                'Debug.Print rs.Fields("matchname").Value
+                co = co + 1
+            End If
+            If InStr(1, rst.Fields("matchname").Value, Trim(rs.Fields("ateam").Value), vbTextCompare) > 0 Then
+                co = co + 1
+            End If
+            If co = 2 Then 'found
+                'goal = DCount("matchid", "table4", "matchid = '" & rst.Fields("matchid").Value & "' and event = 'Goal'")
+                goal = rst.Fields("HFScore").Value + rst.Fields("AFScore").Value
+
+                If goal > 0 Then
+                    result = "Won"
+                Else
+                    goal = 0
+                    result = "Lost"
+                End If
+                With rs
+                .Edit
+                ![goal] = goal
+                ![result] = result
+                .Update
+                End With
+            End If
+            
+            rst.MoveNext
+        Loop
+        rs.MoveNext
+    Loop
+    
+    rs.Close
+    Set rs = Nothing
+    
+    rst.Close
+    Set rst = Nothing
+    
+End Sub
+
+Sub calculateReturn(matchdate As String)
+    
+    Dim rs As Recordset
+    Dim yield As Single
+    Dim x As Integer
+    Dim won As Single
+    Dim lost As Single
+    
+    'Debug.Print "select * from TableBADetails where result = 'Won'"
+    Set rs = CurrentDb.OpenRecordset("select * from TableBetMarket where matchdatestr = '" & matchdate & "' and result is not null")
+    x = 0
+    Do While Not rs.EOF
+        'Debug.Print rs.Fields(3).Value, rs.Fields(7).Value
+        If rs.Fields("result") = "Lost" Then
+            lost = lost + 10
+        Else
+            won = won + 10 * (rs.Fields(7).Value - 1)
+        End If
+        x = x + 1
+        rs.MoveNext
+    Loop
+    
+    yield = won - lost
+    
+    rs.Close
+    Set rs = Nothing
+    
+    Debug.Print x * 10
+    Debug.Print won, lost, yield
+    Debug.Print Format(yield / (x * 10), "#.###")
+End Sub
+
+Sub calculateover15Return(matchdate As String)
+    
+    Dim rs As Recordset
+    Dim yield As Single
+    Dim x As Integer
+    Dim won As Single
+    Dim lost As Single
+    
+    'Debug.Print "select * from TableBADetails where result = 'Won'"
+    Set rs = CurrentDb.OpenRecordset("select * from TableBetMarket where matchdatestr = '" & matchdate & "' and result is not null")
+    x = 0
+    Do While Not rs.EOF
+        'Debug.Print rs.Fields(3).Value, rs.Fields(7).Value
+        If rs.Fields("Goal") < 2 Then
+            lost = lost + 10
+        Else
+            won = won + 10 * (rs.Fields(6).Value - 1)
+        End If
+        x = x + 1
+        rs.MoveNext
+    Loop
+    
+    yield = won - lost
+    
+    rs.Close
+    Set rs = Nothing
+    
+    Debug.Print x * 10
+    Debug.Print won, lost, yield
+    Debug.Print Format(yield / (x * 10), "#.###")
+    
+End Sub
+
+Sub replaceText(targetText As String, seletected As String, InsertText As String)
+    'On Error Resume Next
+    
+    Dim firstvalue As String
+    Dim wholevalue As String
+    Dim x As Long
+    Dim y As Long
+    
+    x = InStr(1, targetText, seletected)
+    If x <> 0 Then
+        y = x + Len(seletected)
+        
+        firstvalue = Left(targetText, x - 1)
+        wholevalue = firstvalue & InsertText & Mid(targetText, y, 1000000000)
+        targetText = wholevalue
+    End If
+
+End Sub
+
+Public Sub writehtmlfile(filename As String, filecontent As String)
+
+    Dim f As Object
+    Dim fs As Object
+
+    If Len(filename) = 0 Or Len(filecontent) = 0 Then
+        Exit Sub
+    End If
+
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    If fs.FileExists(filename) Then
+        Set f = fs.GetFile(filename)
+        f.Delete (True)
+    End If
+
+    Set f = fs.CreateTextFile(filename)
+    f.WriteLine filecontent
+    f.Close
+
+    Set f = Nothing
+    Set fs = Nothing
+
+End Sub
+
+Sub generateReportHTMLfile(matchtime As String, columnStr1 As String, ChartStr1 As String, columnStr2 As String, ChartStr2 As String, columnStr3 As String, ChartStr3 As String, columnStr4 As String, ChartStr4 As String, titleStr1 As String, titleStr2 As String, titleStr3 As String, titleStr4 As String)
+    
+    Dim filecontent As String
+    Dim filename As String
+    'Dim mainfilename As String
+    'Dim mainfilecontent As String
+    Dim filefolder As String
+    Dim obrowser As WebBrowser
+    
+    filefolder = "I:\Asian Support Department\Asian Customer Account Advisor\member files\FRM PC\Members files\Mingtao Zhang\Toolbox\FIFA\BA\"
+    filename = filefolder & matchtime & "Report.html"
+    
+    filecontent = DLookup("html", "tablehtmlcode", "title = 'marketAnalysis'")
+    Debug.Print 1
+    Call replaceText(filecontent, "#chartcolumn1", columnStr1)
+    Call replaceText(filecontent, "#chartdata1", ChartStr1)
+    Debug.Print 2
+    Call replaceText(filecontent, "#chartcolumn2", columnStr2)
+    Call replaceText(filecontent, "#chartdata2", ChartStr2)
+    Debug.Print 3
+    Call replaceText(filecontent, "#chartcolumn3", columnStr3)
+    Call replaceText(filecontent, "#chartdata3", ChartStr3)
+    Debug.Print 4
+    Call replaceText(filecontent, "#chartcolumn4", columnStr4)
+    Call replaceText(filecontent, "#chartdata4", ChartStr4)
+    Debug.Print 5
+    Call replaceText(filecontent, "#charttitle1", titleStr1)
+    Debug.Print 6
+    Call replaceText(filecontent, "#charttitle2", titleStr2)
+    Debug.Print 7
+    Call replaceText(filecontent, "#charttitle3", titleStr3)
+    Debug.Print 8
+    Call replaceText(filecontent, "#charttitle4", titleStr4)
+    Debug.Print 9
+
+    Call writehtmlfile(filename, filecontent)
+    Pause
+    Pause
+    Pause
+    Pause
+    Pause
+    Pause
+    Pause
+    
+
+    'Set obrowser = Form_Form2.WebBrowser_report.Object
+    
+    'Form_Form2.WebBrowser_report.ControlSource = filename
+    'Debug.Print filename
+    
+    'obrowser.Navigate filename
+
+End Sub
+
+Sub generate1stQreport(matchname As String, matchtime As String)
+
+    Dim rs As Recordset
+    Dim x As Integer
+    Dim y As Integer
+    'Dim matchname As String
+    Dim sql As String
+    Dim eqt, eqh, eqa, eqs, qt, qh, qa, qs, mt, mh, ma, ms As Single
+    Dim es As Integer
+    Dim columnStr1 As String, ChartStr1 As String, columnStr2 As String, ChartStr2 As String, columnStr3 As String, ChartStr3 As String, columnStr4 As String, ChartStr4 As String, titleStr1 As String, titleStr2 As String, titleStr3 As String, titleStr4 As String
+    Dim rate As Integer
+    Dim mtime As String
+    Dim eventtime As String
+    Dim af, ah, aa, ef, eh, ea, bf, bh, ba, bs As String
+    
+    Debug.Print "start"
+    
+    If matchtime <> "All" Then
+    
+        If IsNull(DLookup("rate", "TableBADetails", "EventName = '" & matchname & "'")) Then
+            rate = 600
+        Else
+            rate = DLookup("rate", "TableBADetails", "EventName = '" & matchname & "'")
+        End If
+        
+        'matchname = "IND Pacers v DEN Nuggets"
+        Select Case matchtime
+            Case "Q1"
+                sql = "select eventname, Q1T, Q1H, Q1A, Q1S, Q1HS, Q1AS, Q1TimeUsed, Q1SPREAD, Q1Tpoint, Q1Hpoint, Q1Apoint from TableBADetails where EventName = '" & matchname & "' and Q1TimeUsed <> " & rate & " order by Q1TimeUsed DESC"
+                eventtime = "Q1TimeUsed"
+                af = "Q1S"
+                ah = "Q1HS"
+                aa = "Q1AS"
+                ef = "q1t"
+                eh = "q1h"
+                ea = "q1a"
+                bf = "Q1Tpoint"
+                bh = "Q1Hpoint"
+                ba = "Q1Apoint"
+                bs = "Q1Spread"
+            Case "Q2"
+                sql = "select eventname, Q2T, Q2H, Q2A, Q2S, Q2HS, Q2AS, Q2TimeUsed, Q2SPREAD, Q2Tpoint, Q2Hpoint, Q2Apoint from TableBADetails where EventName = '" & matchname & "' and Q2TimeUsed <> " & rate & " order by Q2TimeUsed DESC"
+                eventtime = "Q2TimeUsed"
+                af = "Q2S"
+                ah = "Q2HS"
+                aa = "Q2AS"
+                ef = "q2t"
+                eh = "q2h"
+                ea = "q2a"
+                bf = "Q2Tpoint"
+                bh = "Q2Hpoint"
+                ba = "Q2Apoint"
+                bs = "Q2Spread"
+            Case "Q3"
+                sql = "select eventname, Q3T, Q3H, Q3A, Q3S, Q3HS, Q3AS, Q3TimeUsed, Q3SPREAD, Q3Tpoint, Q3Hpoint, Q3Apoint from TableBADetails where EventName = '" & matchname & "' and Q3TimeUsed <> " & rate & " order by Q3TimeUsed DESC"
+                eventtime = "Q3TimeUsed"
+                af = "Q3S"
+                ah = "Q3HS"
+                aa = "Q3AS"
+                ef = "q3t"
+                eh = "q3h"
+                ea = "q3a"
+                bf = "Q3Tpoint"
+                bh = "Q3Hpoint"
+                ba = "Q3Apoint"
+                bs = "Q3Spread"
+            Case "Q4"
+                eventtime = "Q4TimeUsed"
+                af = "Q4S"
+                ah = "Q4HS"
+                aa = "Q4AS"
+                ef = "q4t"
+                eh = "q4h"
+                ea = "q4a"
+                bf = "Q4Tpoint"
+                bh = "Q4Hpoint"
+                ba = "Q4Apoint"
+                bs = "Q4Spread"
+                sql = "select eventname, Q4T, Q4H, Q4A, Q4S, Q4HS, Q4AS, Q4TimeUsed, Q4SPREAD, Q4Tpoint, Q4Hpoint, Q4Apoint from TableBADetails where EventName = '" & matchname & "' and Q4TimeUsed <> " & rate & " order by Q4TimeUsed DESC"
+            Case "H1"
+                eventtime = "H1TimeUsed"
+                af = "H1S"
+                ah = "H1HS"
+                aa = "H1AS"
+                ef = "h1t"
+                eh = "h1h"
+                ea = "h1a"
+                bf = "H1Tpoint"
+                bh = "H1Hpoint"
+                ba = "H1Apoint"
+                bs = "H1Spread"
+                sql = "select eventname, H1T, H1H, H1A, H1S, H1HS, H1AS, H1TimeUsed, H1SPREAD, H1Tpoint, H1Hpoint, H1Apoint from TableBADetails where EventName = '" & matchname & "' and H1TimeUsed <> " & rate * 2 & " order by H1TimeUsed DESC"
+            Case "H2"
+                eventtime = "H2TimeUsed"
+                af = "H2S"
+                ah = "H2HS"
+                aa = "H2AS"
+                ef = "h2t"
+                eh = "h2h"
+                ea = "h2a"
+                bf = "H2Tpoint"
+                bh = "H2Hpoint"
+                ba = "H2Apoint"
+                bs = "H2Spread"
+                sql = "select eventname, H2T, H2H, H2A, H2S, H2HS, H2AS, H2TimeUsed, H2SPREAD, H2Tpoint, H2Hpoint, H2Apoint from TableBADetails where EventName = '" & matchname & "' and H2TimeUsed <> " & rate * 2 & " order by H2TimeUsed DESC"
+            Case "Full"
+                eventtime = "FTimeUsed"
+                af = "FS"
+                ah = "FHS"
+                aa = "FAS"
+                ef = "tt"
+                eh = "th"
+                ea = "ta"
+                bf = "FTpoint"
+                bh = "FHpoint"
+                ba = "FApoint"
+                bs = "FSpread"
+                sql = "select eventname, TT, TH, TA, FS, FHS, FAS, FTimeUsed, FSPREAD, FTpoint, FHpoint, FApoint from TableBADetails where EventName = '" & matchname & "' and FTimeUsed <> " & rate * 4 & " order by FTimeUsed DESC"
+        End Select
+        
+        'sql = "select eventname, Q1T, Q1H, Q1A, Q1S, Q1HS, Q1AS, Q1TIME, Q1SPREAD, Q1Tpoint, Q1Hpoint, Q1Apoint from TableBADetails where EventName = '" & matchname & "'"
+        'rate = Form_Form2.com_time
+        Debug.Print sql
+        'rate = Form_Form2.com_time
+        Set rs = CurrentDb.OpenRecordset(sql)
+    
+        columnStr1 = columnStr1 & "data1.addColumn('number', 'Second');"
+        columnStr2 = columnStr2 & "data2.addColumn('number', 'Second');"
+        columnStr3 = columnStr3 & "data3.addColumn('number', 'Second');"
+        columnStr4 = columnStr4 & "data4.addColumn('number', 'Second');"
+        
+        columnStr1 = columnStr1 & "data1.addColumn('number', '" & matchtime & " Total Point');"
+        columnStr2 = columnStr2 & "data2.addColumn('number', '" & matchtime & " Home Point');"
+        columnStr3 = columnStr3 & "data3.addColumn('number', '" & matchtime & " Away Point');"
+        columnStr4 = columnStr4 & "data4.addColumn('number', '" & matchtime & " Spread Point');"
+        columnStr1 = columnStr1 & "data1.addColumn('number', '" & matchtime & " Estimate Total Point');"
+        columnStr2 = columnStr2 & "data2.addColumn('number', '" & matchtime & " Estimate Home Point');"
+        columnStr3 = columnStr3 & "data3.addColumn('number', '" & matchtime & " Estimate Away Point');"
+        columnStr4 = columnStr4 & "data4.addColumn('number', '" & matchtime & " Estimate Spread Point');"
+        columnStr1 = columnStr1 & "data1.addColumn('number', '" & matchtime & " Market Total Point');"
+        columnStr2 = columnStr2 & "data2.addColumn('number', '" & matchtime & " Market Home Point');"
+        columnStr3 = columnStr3 & "data3.addColumn('number', '" & matchtime & " Market Away Point');"
+        columnStr4 = columnStr4 & "data4.addColumn('number', '" & matchtime & " Market Spread Point');"
+        
+        Debug.Print rs.RecordCount
+        If rs.RecordCount = 0 Then
+            Exit Sub
+        End If
+        
+        rs.MoveFirst
+        Do While Not rs.EOF
+            'mtime = CStr(rs.Fields(eventtime).Value)
+            'mtime = Left(mtime, 5)
+            'Debug.Print rate * 60
+            es = rs.Fields(eventtime).Value
+            'es = ct(mtime)
+            'Debug.Print es, rs.Fields("q1time").Value, rs.Fields(0).Value
+            'If es = rate * 60 Then
+                qt = rs.Fields(af).Value
+                qh = rs.Fields(ah).Value
+                qa = rs.Fields(aa).Value
+                qs = qa - qh
+                eqt = rs.Fields(ef).Value
+                eqh = rs.Fields(eh).Value
+                eqa = rs.Fields(ea).Value
+    '            eqt = rs.Fields("q1t").Value * 60 * rate
+    '            eqh = rs.Fields("q1h").Value * 60 * rate
+    '            eqa = rs.Fields("q1a").Value * 60 * rate
+                eqs = eqa - eqh
+                mt = Nz(rs.Fields(bf).Value, 0)
+                mh = Nz(rs.Fields(bh).Value, 0)
+                ma = Nz(rs.Fields(ba).Value, 0)
+                ms = Nz(rs.Fields(bs).Value, 0)
+                ChartStr1 = "[" & es & ", " & qt & ", " & eqt & ", " & mt & "]," & ChartStr1
+                ChartStr2 = "[" & es & ", " & qh & ", " & eqh & ", " & mh & "]," & ChartStr2
+                ChartStr3 = "[" & es & ", " & qa & ", " & eqa & ", " & ma & "]," & ChartStr3
+                ChartStr4 = "[" & es & ", " & qs & ", " & eqs & ", " & ms & "]," & ChartStr4
+            'End If
+            rs.MoveNext
+        Loop
+        ChartStr1 = Left(ChartStr1, Len(ChartStr1) - 1)
+        ChartStr2 = Left(ChartStr2, Len(ChartStr2) - 1)
+        ChartStr3 = Left(ChartStr3, Len(ChartStr3) - 1)
+        ChartStr4 = Left(ChartStr4, Len(ChartStr4) - 1)
+        'ChartStr = "[" & ChartStr & "]"
+        titleStr1 = matchname & " " & matchtime & " Total Point Analysis"
+        titleStr2 = matchname & " " & matchtime & " Home Team Total Point Analysis"
+        titleStr3 = matchname & " " & matchtime & " Away Team Total Point Analysis"
+        titleStr4 = matchname & " " & matchtime & " Spread Analysis"
+        Debug.Print "almost"
+        Call generateReportHTMLfile(matchtime, columnStr1, ChartStr1, columnStr2, ChartStr2, columnStr3, ChartStr3, columnStr4, ChartStr4, titleStr1, titleStr2, titleStr3, titleStr4)
+        Debug.Print "done"
+    Else
+        If IsNull(DLookup("rate", "TableBADetails", "EventName = '" & matchname & "'")) Then
+            rate = 600
+        Else
+            rate = DLookup("rate", "TableBADetails", "EventName = '" & matchname & "'")
+        End If
+        
+        'matchname = "IND Pacers v DEN Nuggets"
+        Select Case matchtime
+            Case "Q1"
+                sql = "select eventname, Q1T, Q1H, Q1A, Q1S, Q1HS, Q1AS, Q1TimeUsed, Q1SPREAD, Q1Tpoint, Q1Hpoint, Q1Apoint from TableBADetails where EventName = '" & matchname & "' and Q1TimeUsed <> " & rate & " order by Q1TimeUsed DESC"
+                eventtime = "Q1TimeUsed"
+                af = "Q1S"
+                ah = "Q1HS"
+                aa = "Q1AS"
+                ef = "q1t"
+                eh = "q1h"
+                ea = "q1a"
+                bf = "Q1Tpoint"
+                bh = "Q1Hpoint"
+                ba = "Q1Apoint"
+                bs = "Q1Spread"
+            Case "Q2"
+                sql = "select eventname, Q2T, Q2H, Q2A, Q2S, Q2HS, Q2AS, Q2TimeUsed, Q2SPREAD, Q2Tpoint, Q2Hpoint, Q2Apoint from TableBADetails where EventName = '" & matchname & "' and Q2TimeUsed <> " & rate & " order by Q2TimeUsed DESC"
+                eventtime = "Q2TimeUsed"
+                af = "Q2S"
+                ah = "Q2HS"
+                aa = "Q2AS"
+                ef = "q2t"
+                eh = "q2h"
+                ea = "q2a"
+                bf = "Q2Tpoint"
+                bh = "Q2Hpoint"
+                ba = "Q2Apoint"
+                bs = "Q2Spread"
+            Case "Q3"
+                sql = "select eventname, Q3T, Q3H, Q3A, Q3S, Q3HS, Q3AS, Q3TimeUsed, Q3SPREAD, Q3Tpoint, Q3Hpoint, Q3Apoint from TableBADetails where EventName = '" & matchname & "' and Q3TimeUsed <> " & rate & " order by Q3TimeUsed DESC"
+                eventtime = "Q3TimeUsed"
+                af = "Q3S"
+                ah = "Q3HS"
+                aa = "Q3AS"
+                ef = "q3t"
+                eh = "q3h"
+                ea = "q3a"
+                bf = "Q3Tpoint"
+                bh = "Q3Hpoint"
+                ba = "Q3Apoint"
+                bs = "Q3Spread"
+            Case "Q4"
+                eventtime = "Q4TimeUsed"
+                af = "Q4S"
+                ah = "Q4HS"
+                aa = "Q4AS"
+                ef = "q4t"
+                eh = "q4h"
+                ea = "q4a"
+                bf = "Q4Tpoint"
+                bh = "Q4Hpoint"
+                ba = "Q4Apoint"
+                bs = "Q4Spread"
+                sql = "select eventname, Q4T, Q4H, Q4A, Q4S, Q4HS, Q4AS, Q4TimeUsed, Q4SPREAD, Q4Tpoint, Q4Hpoint, Q4Apoint from TableBADetails where EventName = '" & matchname & "' and Q4TimeUsed <> " & rate & " order by Q4TimeUsed DESC"
+            Case "H1"
+                eventtime = "H1TimeUsed"
+                af = "H1S"
+                ah = "H1HS"
+                aa = "H1AS"
+                ef = "h1t"
+                eh = "h1h"
+                ea = "h1a"
+                bf = "H1Tpoint"
+                bh = "H1Hpoint"
+                ba = "H1Apoint"
+                bs = "H1Spread"
+                sql = "select eventname, H1T, H1H, H1A, H1S, H1HS, H1AS, H1TimeUsed, H1SPREAD, H1Tpoint, H1Hpoint, H1Apoint from TableBADetails where EventName = '" & matchname & "' and H1TimeUsed <> " & rate * 2 & " order by H1TimeUsed DESC"
+            Case "H2"
+                eventtime = "H2TimeUsed"
+                af = "H2S"
+                ah = "H2HS"
+                aa = "H2AS"
+                ef = "h2t"
+                eh = "h2h"
+                ea = "h2a"
+                bf = "H2Tpoint"
+                bh = "H2Hpoint"
+                ba = "H2Apoint"
+                bs = "H2Spread"
+                sql = "select eventname, H2T, H2H, H2A, H2S, H2HS, H2AS, H2TimeUsed, H2SPREAD, H2Tpoint, H2Hpoint, H2Apoint from TableBADetails where EventName = '" & matchname & "' and H2TimeUsed <> " & rate * 2 & " order by H2TimeUsed DESC"
+            Case "Full"
+                eventtime = "FTimeUsed"
+                af = "FS"
+                ah = "FHS"
+                aa = "FAS"
+                ef = "tt"
+                eh = "th"
+                ea = "ta"
+                bf = "FTpoint"
+                bh = "FHpoint"
+                ba = "FApoint"
+                bs = "FSpread"
+                sql = "select eventname, TT, TH, TA, FS, FHS, FAS, FTimeUsed, FSPREAD, FTpoint, FHpoint, FApoint from TableBADetails where EventName = '" & matchname & "' and FTimeUsed <> " & rate * 4 & " order by FTimeUsed DESC"
+        End Select
+        
+        'sql = "select eventname, Q1T, Q1H, Q1A, Q1S, Q1HS, Q1AS, Q1TIME, Q1SPREAD, Q1Tpoint, Q1Hpoint, Q1Apoint from TableBADetails where EventName = '" & matchname & "'"
+        'rate = Form_Form2.com_time
+        Debug.Print sql
+        'rate = Form_Form2.com_time
+        Set rs = CurrentDb.OpenRecordset(sql)
+    
+        columnStr1 = columnStr1 & "data1.addColumn('number', 'Second');"
+        columnStr2 = columnStr2 & "data2.addColumn('number', 'Second');"
+        columnStr3 = columnStr3 & "data3.addColumn('number', 'Second');"
+        columnStr4 = columnStr4 & "data4.addColumn('number', 'Second');"
+        
+        columnStr1 = columnStr1 & "data1.addColumn('number', '" & matchtime & " Total Point');"
+        columnStr2 = columnStr2 & "data2.addColumn('number', '" & matchtime & " Home Point');"
+        columnStr3 = columnStr3 & "data3.addColumn('number', '" & matchtime & " Away Point');"
+        columnStr4 = columnStr4 & "data4.addColumn('number', '" & matchtime & " Spread Point');"
+        columnStr1 = columnStr1 & "data1.addColumn('number', '" & matchtime & " Estimate Total Point');"
+        columnStr2 = columnStr2 & "data2.addColumn('number', '" & matchtime & " Estimate Home Point');"
+        columnStr3 = columnStr3 & "data3.addColumn('number', '" & matchtime & " Estimate Away Point');"
+        columnStr4 = columnStr4 & "data4.addColumn('number', '" & matchtime & " Estimate Spread Point');"
+        columnStr1 = columnStr1 & "data1.addColumn('number', '" & matchtime & " Market Total Point');"
+        columnStr2 = columnStr2 & "data2.addColumn('number', '" & matchtime & " Market Home Point');"
+        columnStr3 = columnStr3 & "data3.addColumn('number', '" & matchtime & " Market Away Point');"
+        columnStr4 = columnStr4 & "data4.addColumn('number', '" & matchtime & " Market Spread Point');"
+        
+        Debug.Print rs.RecordCount
+        If rs.RecordCount = 0 Then
+            Exit Sub
+        End If
+        
+        rs.MoveFirst
+        Do While Not rs.EOF
+            'mtime = CStr(rs.Fields(eventtime).Value)
+            'mtime = Left(mtime, 5)
+            'Debug.Print rate * 60
+            es = rs.Fields(eventtime).Value
+            'es = ct(mtime)
+            'Debug.Print es, rs.Fields("q1time").Value, rs.Fields(0).Value
+            'If es = rate * 60 Then
+                qt = rs.Fields(af).Value
+                qh = rs.Fields(ah).Value
+                qa = rs.Fields(aa).Value
+                qs = qa - qh
+                eqt = rs.Fields(ef).Value
+                eqh = rs.Fields(eh).Value
+                eqa = rs.Fields(ea).Value
+    '            eqt = rs.Fields("q1t").Value * 60 * rate
+    '            eqh = rs.Fields("q1h").Value * 60 * rate
+    '            eqa = rs.Fields("q1a").Value * 60 * rate
+                eqs = eqa - eqh
+                mt = Nz(rs.Fields(bf).Value, 0)
+                mh = Nz(rs.Fields(bh).Value, 0)
+                ma = Nz(rs.Fields(ba).Value, 0)
+                ms = Nz(rs.Fields(bs).Value, 0)
+                ChartStr1 = "[" & es & ", " & qt & ", " & eqt & ", " & mt & "]," & ChartStr1
+                ChartStr2 = "[" & es & ", " & qh & ", " & eqh & ", " & mh & "]," & ChartStr2
+                ChartStr3 = "[" & es & ", " & qa & ", " & eqa & ", " & ma & "]," & ChartStr3
+                ChartStr4 = "[" & es & ", " & qs & ", " & eqs & ", " & ms & "]," & ChartStr4
+            'End If
+            rs.MoveNext
+        Loop
+        ChartStr1 = Left(ChartStr1, Len(ChartStr1) - 1)
+        ChartStr2 = Left(ChartStr2, Len(ChartStr2) - 1)
+        ChartStr3 = Left(ChartStr3, Len(ChartStr3) - 1)
+        ChartStr4 = Left(ChartStr4, Len(ChartStr4) - 1)
+        'ChartStr = "[" & ChartStr & "]"
+        titleStr1 = matchname & " " & matchtime & " Total Point Analysis"
+        titleStr2 = matchname & " " & matchtime & " Home Team Total Point Analysis"
+        titleStr3 = matchname & " " & matchtime & " Away Team Total Point Analysis"
+        titleStr4 = matchname & " " & matchtime & " Spread Analysis"
+        Debug.Print "almost"
+        Call generateReportHTMLfile(matchtime, columnStr1, ChartStr1, columnStr2, ChartStr2, columnStr3, ChartStr3, columnStr4, ChartStr4, titleStr1, titleStr2, titleStr3, titleStr4)
+        Debug.Print "done"
+    End If
+    
+End Sub
+
+Sub testing()
+    Call generate1stQreport("AEK Larnaca v Etha Engomis", "full")
+End Sub
