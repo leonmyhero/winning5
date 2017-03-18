@@ -22,6 +22,7 @@ Sub readbasketballmatchlist()
                 If em.className = "ipn-Competition ipn-Competition-closed " Then
                     em.Click
                 End If
+
             Next
             Pause
             Pause
@@ -33,7 +34,12 @@ Sub readbasketballmatchlist()
                     For Each bm In em.getElementsByTagName("div")
                         If bm.className = "ipn-TeamStack " Then
                             Debug.Print bm.innerText
-                            
+                        End If
+                        If bm.className = "ipn-ScoreDisplayStandard_Timer" Then
+                            Debug.Print bm.innerText
+                        End If
+                        If bm.className = "ipn-ScoreDisplayStandard_Period" Then
+                            Debug.Print bm.innerText
                         End If
                     Next
                 End If
@@ -43,3 +49,4 @@ Sub readbasketballmatchlist()
     Next
     
 End Sub
+
