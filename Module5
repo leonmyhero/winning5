@@ -1,4 +1,12 @@
 Option Compare Database
+Option Explicit
+
+Type datamatrix
+    es As Integer
+    qt As Single
+    eqt As Single
+    mt As Single
+End Type
 
 Sub readfile(matchdate As Date)
 
@@ -342,6 +350,10 @@ Sub generate1stQreport(matchname As String, matchtime As String)
     Dim mtime As String
     Dim eventtime As String
     Dim af, ah, aa, ef, eh, ea, bf, bh, ba, bs As String
+    Dim totaldata() As datamatrix
+    Dim homedata() As datamatrix
+    Dim awaydata() As datamatrix
+    Dim spreaddata() As datamatrix
     
     Debug.Print "start"
     
@@ -472,7 +484,7 @@ Sub generate1stQreport(matchname As String, matchtime As String)
         columnStr3 = columnStr3 & "data3.addColumn('number', '" & matchtime & " Market Away Point');"
         columnStr4 = columnStr4 & "data4.addColumn('number', '" & matchtime & " Market Spread Point');"
         
-        Debug.Print rs.RecordCount
+        'Debug.Print rs.RecordCount
         If rs.RecordCount = 0 Then
             Exit Sub
         End If
@@ -501,13 +513,52 @@ Sub generate1stQreport(matchname As String, matchtime As String)
                 mh = Nz(rs.Fields(bh).Value, 0)
                 ma = Nz(rs.Fields(ba).Value, 0)
                 ms = Nz(rs.Fields(bs).Value, 0)
-                ChartStr1 = "[" & es & ", " & qt & ", " & eqt & ", " & mt & "]," & ChartStr1
-                ChartStr2 = "[" & es & ", " & qh & ", " & eqh & ", " & mh & "]," & ChartStr2
-                ChartStr3 = "[" & es & ", " & qa & ", " & eqa & ", " & ma & "]," & ChartStr3
-                ChartStr4 = "[" & es & ", " & qs & ", " & eqs & ", " & ms & "]," & ChartStr4
+                ReDim Preserve totaldata(0 To x)
+                ReDim Preserve homedata(0 To x)
+                ReDim Preserve awaydata(0 To x)
+                ReDim Preserve spreaddata(0 To x)
+                totaldata(x).es = es
+                totaldata(x).qt = qt
+                totaldata(x).eqt = eqt
+                totaldata(x).mt = mt
+                
+                homedata(x).es = es
+                homedata(x).qt = qh
+                homedata(x).eqt = eqh
+                homedata(x).mt = mh
+                
+                awaydata(x).es = es
+                awaydata(x).qt = qa
+                awaydata(x).eqt = eqa
+                awaydata(x).mt = ma
+                
+                spreaddata(x).es = es
+                spreaddata(x).qt = qs
+                spreaddata(x).eqt = eqs
+                spreaddata(x).mt = ms
+                
+                x = x + 1
             'End If
             rs.MoveNext
         Loop
+        
+        Call removeRedundantData(totaldata())
+        Call removeRedundantData(homedata())
+        Call removeRedundantData(awaydata())
+        Call removeRedundantData(spreaddata())
+        
+        For x = 0 To UBound(totaldata)
+            ChartStr1 = "[" & totaldata(x).es & ", " & totaldata(x).qt & ", " & totaldata(x).eqt & ", " & totaldata(x).mt & "]," & ChartStr1
+        Next
+        For x = 0 To UBound(homedata)
+            ChartStr2 = "[" & homedata(x).es & ", " & homedata(x).qt & ", " & homedata(x).eqt & ", " & homedata(x).mt & "]," & ChartStr2
+        Next
+        For x = 0 To UBound(awaydata)
+            ChartStr3 = "[" & awaydata(x).es & ", " & awaydata(x).qt & ", " & awaydata(x).eqt & ", " & awaydata(x).mt & "]," & ChartStr3
+        Next
+        For x = 0 To UBound(spreaddata)
+            ChartStr4 = "[" & spreaddata(x).es & ", " & spreaddata(x).qt & ", " & spreaddata(x).eqt & ", " & spreaddata(x).mt & "]," & ChartStr4
+        Next
         ChartStr1 = Left(ChartStr1, Len(ChartStr1) - 1)
         ChartStr2 = Left(ChartStr2, Len(ChartStr2) - 1)
         ChartStr3 = Left(ChartStr3, Len(ChartStr3) - 1)
@@ -652,6 +703,7 @@ Sub generate1stQreport(matchname As String, matchtime As String)
         End If
         
         rs.MoveFirst
+        x = 0
         Do While Not rs.EOF
             'mtime = CStr(rs.Fields(eventtime).Value)
             'mtime = Left(mtime, 5)
@@ -675,13 +727,52 @@ Sub generate1stQreport(matchname As String, matchtime As String)
                 mh = Nz(rs.Fields(bh).Value, 0)
                 ma = Nz(rs.Fields(ba).Value, 0)
                 ms = Nz(rs.Fields(bs).Value, 0)
-                ChartStr1 = "[" & es & ", " & qt & ", " & eqt & ", " & mt & "]," & ChartStr1
-                ChartStr2 = "[" & es & ", " & qh & ", " & eqh & ", " & mh & "]," & ChartStr2
-                ChartStr3 = "[" & es & ", " & qa & ", " & eqa & ", " & ma & "]," & ChartStr3
-                ChartStr4 = "[" & es & ", " & qs & ", " & eqs & ", " & ms & "]," & ChartStr4
+                ReDim Preserve totaldata(0 To x)
+                ReDim Preserve homedata(0 To x)
+                ReDim Preserve awaydata(0 To x)
+                ReDim Preserve spreaddata(0 To x)
+                totaldata(x).es = es
+                totaldata(x).qt = qt
+                totaldata(x).eqt = eqt
+                totaldata(x).mt = mt
+                
+                homedata(x).es = es
+                homedata(x).qt = qh
+                homedata(x).eqt = eqh
+                homedata(x).mt = mh
+                
+                awaydata(x).es = es
+                awaydata(x).qt = qa
+                awaydata(x).eqt = eqa
+                awaydata(x).mt = ma
+                
+                spreaddata(x).es = es
+                spreaddata(x).qt = qs
+                spreaddata(x).eqt = eqs
+                spreaddata(x).mt = ms
+                
+                x = x + 1
             'End If
             rs.MoveNext
         Loop
+        
+        Call removeRedundantData(totaldata())
+        Call removeRedundantData(homedata())
+        Call removeRedundantData(awaydata())
+        Call removeRedundantData(spreaddata())
+        
+        For x = 0 To UBound(totaldata)
+            ChartStr1 = "[" & totaldata(x).es & ", " & totaldata(x).qt & ", " & totaldata(x).eqt & ", " & totaldata(x).mt & "]," & ChartStr1
+        Next
+        For x = 0 To UBound(homedata)
+            ChartStr2 = "[" & homedata(x).es & ", " & homedata(x).qt & ", " & homedata(x).eqt & ", " & homedata(x).mt & "]," & ChartStr2
+        Next
+        For x = 0 To UBound(awaydata)
+            ChartStr3 = "[" & awaydata(x).es & ", " & awaydata(x).qt & ", " & awaydata(x).eqt & ", " & awaydata(x).mt & "]," & ChartStr3
+        Next
+        For x = 0 To UBound(spreaddata)
+            ChartStr4 = "[" & spreaddata(x).es & ", " & spreaddata(x).qt & ", " & spreaddata(x).eqt & ", " & spreaddata(x).mt & "]," & ChartStr4
+        Next
         ChartStr1 = Left(ChartStr1, Len(ChartStr1) - 1)
         ChartStr2 = Left(ChartStr2, Len(ChartStr2) - 1)
         ChartStr3 = Left(ChartStr3, Len(ChartStr3) - 1)
