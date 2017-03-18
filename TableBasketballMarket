@@ -1,0 +1,134 @@
+TableBasketballMarket
+ID	MarketGroupName	MarketHeader	Range	Level
+190	Game Lines	Spread	F	VS
+191	Game Lines	Total	F	VP
+192	Game Lines	Money Line	F	
+193	3rd Quarter Lines	Spread	Q3	VS
+194	3rd Quarter Lines	Total	Q3	VP
+195	3rd Quarter Lines	Money Line	Q3	
+196	3rd Quarter Margin of Victory		Q3	
+197	3rd Quarter Race To	20	Q3	
+198	2nd Half Lines	Money Line	H2	
+199	2nd Half Race To	20	H2	
+200	2nd Half Race To	25	H2	
+201	2nd Half Race To	30	H2	
+202	Team Totals		F	VT
+203	Will There Be Overtime?		F	
+204	Winning Margin	Olympiacos	F	
+205	Winning Margin	Panathinaikos	F	
+206	Winning Margin 3-Way		F	
+207	Odd/Even	Match	F	
+208	Odd/Even	3rd Quarter	Q3	
+209	比赛投注	让分	F	VS
+210	比赛投注	总分	F	VP
+211	比赛投注	强弱盘赔率	F	
+212	第3节投注	让分	Q3	VS
+213	第3节投注	总分	Q3	VP
+214	第3节投注	强弱盘赔率	Q3	
+215	第3节 输赢比数		Q3	
+216	第3节首先获得	20	Q3	
+217	下半场投注	强弱盘赔率	H2	
+218	下半场首先获得	20	H2	
+219	下半场首先获得	25	H2	
+220	下半场首先获得	30	H2	
+221	球队总分		F	VT
+222	比赛进入加时		F	
+223	输赢比数	奥林匹亚科斯	F	
+224	输赢比数	帕纳辛纳科斯	F	
+225	输赢比数 3项		F	
+226	奇/偶	比赛	F	
+227	奇/偶	第3赛节	Q3	
+228	第1节投注	让分	Q1	VS
+229	第1节投注	强弱盘赔率	Q1	
+230	第1节 输赢比数		Q1	
+231	上半场投注	让分	H1	VS
+232	上半场投注	总分	H1	VP
+233	上半场投注	强弱盘赔率	H1	
+234	上半场 - 球队总得分		H1	VT
+235	双重赛果		F	
+236	输赢比数	皇家马德里	F	
+237	输赢比数	CSKA莫斯科	F	
+238	奇/偶	上半场	H1	
+239	1st Half Lines	Spread	H1	VS
+240	1st Half Lines	Total	H1	VP
+241	1st Half Lines	Money Line	H1	
+242	1st Half - Team Totals		H1	VT
+243	2nd Quarter Lines	Spread	Q2	VS
+244	2nd Quarter Lines	Total	Q2	VP
+245	2nd Quarter Lines	Money Line	Q2	
+246	2nd Quarter Margin of Victory		Q2	
+247	2nd Quarter - Team Totals		Q2	VT
+248	2nd Quarter Race To	10	Q2	
+249	2nd Quarter Race To	15	Q2	
+250	2nd Quarter Race To	20	Q2	
+251	Double Result		F	
+252	Winning Margin	Real Madrid	F	
+253	Winning Margin	CSKA Moscow	F	
+254	Odd/Even	2nd Quarter	Q2	
+255	Odd/Even	1st Half	H1	
+256	4th Quarter Lines	Spread	Q4	VS
+257	4th Quarter Lines	Total	Q4	VP
+258	4th Quarter Lines	Money Line	Q4	
+259	4th Quarter Margin of Victory		Q4	
+260	4th Quarter - Team Totals		Q4	VT
+261	4th Quarter Race To	10	Q4	
+262	4th Quarter Race To	15	Q4	
+263	4th Quarter Race To	20	Q4	
+264	Winning Margin	Thor Thorl	F	
+265	Winning Margin	Grindavik	F	
+266	Odd/Even	4th Quarter	Q4	
+267	第4节投注	让分	Q4	VS
+268	第4节投注	总分	Q4	VP
+269	第4节投注	强弱盘赔率	Q4	
+270	第4节 输赢比数		Q4	
+271	第4节 - 球队总得分		Q4	VT
+272	第4节首先获得	10	Q4	
+273	第4节首先获得	15	Q4	
+274	第4节首先获得	20	Q4	
+275	输赢比数	Thor Thorl	F	
+276	输赢比数	格林达维克	F	
+277	奇/偶	第4赛节	Q4	
+278	第2节投注	让分	Q2	VS
+279	第2节投注	总分	Q2	VP
+280	第2节投注	强弱盘赔率	Q2	
+281	第2节 输赢比数		Q2	
+282	第2节 - 球队总得分		Q2	VT
+283	第2节首先获得	10	Q2	
+284	第2节首先获得	15	Q2	
+285	第2节首先获得	20	Q2	
+288	奇/偶	第2赛节	Q2	
+291	1st Quarter Lines	Spread	Q1	VS
+292	1st Quarter Lines	Money Line	Q1	
+293	1st Quarter Margin of Victory		Q1	
+294	1st Half Race To	20	H1	
+295	1st Half Race To	25	H1	
+296	1st Half Race To	30	H1	
+299	上半场首先获得	20	H1	
+300	上半场首先获得	25	H1	
+301	上半场首先获得	30	H1	
+304	第3节 - 球队总得分		Q3	VT
+305	第3节首先获得	10	Q3	
+306	第3节首先获得	15	Q3	
+307	下半场投注	让分	H2	VS
+308	下半场投注	总分	H2	VP
+309	下半场 - 球队总得分		H2	VT
+312	奇/偶	下半场	H2	
+313	3rd Quarter - Team Totals		Q3	VT
+314	3rd Quarter Race To	10	Q3	
+315	3rd Quarter Race To	15	Q3	
+316	2nd Half Lines	Spread	H2	VS
+317	2nd Half Lines	Total	H2	VP
+318	2nd Half - Team Totals		H2	VT
+321	Odd/Even	2nd Half	H2	
+322	第1节投注	总分	Q1	VP
+323	第1节 - 球队总得分		Q1	VT
+324	第1节首先获得	20	Q1	
+325	输赢比数	尼维斯		
+326	输赢比数	阿特劳巴斯		
+327	奇/偶	第1赛节		
+328	1st Quarter Lines	Total	Q1	VP
+329	1st Quarter - Team Totals		Q1	VT
+330	1st Quarter Race To	20	Q1	
+331	Winning Margin	Nevezis		
+332	Winning Margin	Barsy Atyrau		
+333	Odd/Even	1st Quarter		
