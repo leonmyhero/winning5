@@ -10,6 +10,12 @@ Sub readbasketballmatchlist()
     Dim pm As HTMLLIElement
     Dim em As HTMLLIElement
     Dim bm As HTMLLIElement
+    Dim matchname As String
+    Dim matchtime As String
+    Dim quartertime As Date
+    Dim hometeam As String
+    Dim awayteam As String
+    
     Set obrowser = Form_Form2.WebBrowser0.Object
     Set ht = obrowser.Document
     
@@ -22,7 +28,6 @@ Sub readbasketballmatchlist()
                 If em.className = "ipn-Competition ipn-Competition-closed " Then
                     em.Click
                 End If
-
             Next
             Pause
             Pause
@@ -31,17 +36,35 @@ Sub readbasketballmatchlist()
             Pause
             For Each em In pm.getElementsByTagName("div")
                 If em.className = "ipn-FixtureButton " Then
+                'If em.className = "ipn-Competition " Then
+                    matchname = ""
                     For Each bm In em.getElementsByTagName("div")
                         If bm.className = "ipn-TeamStack " Then
-                            Debug.Print bm.innerText
+                            'Debug.Print bm.innerText
+                            matchname = matchname & bm.innerText
+                            'Debug.Print (matchname)
                         End If
                         If bm.className = "ipn-ScoreDisplayStandard_Timer" Then
-                            Debug.Print bm.innerText
+                            quartertime = bm.innerText
+                            Debug.Print quartertime
                         End If
                         If bm.className = "ipn-ScoreDisplayStandard_Period" Then
-                            Debug.Print bm.innerText
+                            matchtime = bm.innerText
+                            Debug.Print matchtime
                         End If
                     Next
+                    'matchname = Replace(matchname, vbLf, "v")
+                    hometeam = Left(matchname, InStr(1, matchname, vbLf, vbTextCompare) - 1)
+                    awayteam = Mid(matchname, InStr(1, matchname, vbLf, vbTextCompare) + 1, 20)
+                    For x = 1 To Len(awayteam)
+                        Debug.Print Asc(Mid(awayteam, x, 1)) & Mid(awayteam, x, 1)
+                    Next
+                    hometeam = Replace(hometeam, Chr(13), "", , , vbTextCompare)
+                    hometeam = Replace(hometeam, Chr(10), "", , , vbTextCompare)
+                    awayteam = Replace(awayteam, Chr(13), "", , , vbTextCompare)
+                    awayteam = Replace(awayteam, Chr(10), "", , , vbTextCompare)
+                    Debug.Print "hometeam: " & hometeam, "awayteam " & awayteam
+                    Debug.Print hometeam & " v " & awayteam
                 End If
             Next
             'Debug.Print pm.innerText
@@ -49,4 +72,3 @@ Sub readbasketballmatchlist()
     Next
     
 End Sub
-
