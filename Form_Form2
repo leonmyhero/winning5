@@ -19,10 +19,29 @@ End Sub
 Private Sub btn_report_Click()
     Dim matchname As String
     Dim matchtime As String
+    Dim category(0 To 6) As String
+    Dim x As Integer
     
     matchname = Me.com_match
     matchtime = Me.com_matchtime
-    Call generate1stQreport(matchname, matchtime)
+    category(0) = "Q1"
+    category(1) = "Q2"
+    category(2) = "Q3"
+    category(3) = "Q4"
+    category(4) = "H1"
+    category(5) = "H2"
+    category(6) = "Full"
+    
+    Debug.Print matchtime
+    Debug.Print matchname
+    
+    If matchtime <> "All" Then
+        Call generate1stQreport(matchname, matchtime)
+    Else
+        For x = 0 To UBound(category)
+            Call generate1stQreport(matchname, category(x))
+        Next
+    End If
 End Sub
 
 Private Sub btn_start_Click()
