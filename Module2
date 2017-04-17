@@ -1089,7 +1089,7 @@ End Sub
 
 Sub starttimerinterval()
     
-    Form_Form2.TimerInterval = 2000
+    Form_Form2.TimerInterval = 4000
     
 
 End Sub
@@ -1114,7 +1114,13 @@ Sub catchdata()
     Dim lm As String
     Dim qno As String
     Dim EventName As String
-    'Dim CHNqno As String
+    Dim status As String
+    Dim selection1 As String
+    Dim selection2 As String
+    Dim category As Integer
+    Dim newMatch As Boolean
+    
+
     On Error GoTo errorhandler
     'On Error Resume Next
     
@@ -1122,6 +1128,36 @@ Sub catchdata()
     
     Set ht = obrowser.Document
     em = ht.body.innerHTML
+    
+    If Form_Form2.txt_hteam = "" And Form_Form2.txt_ateam = "" Then
+        status = "waiting"
+    End If
+    
+    If Form_Form2.txt_hteam = ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(0).innerText And Form_Form2.txt_ateam = ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(1).innerText Then
+        status = "ongoing"
+    Else
+        status = "waiting"
+        Form_Form2.txt_hteam = ""
+        Form_Form2.txt_ateam = ""
+    End If
+    
+    Call readbasketballmatchlist(selection1, selection2, newMatch)
+    
+    If status = "waiting" Then
+        'Call readbasketballmatchlist(selection1, selection2, newMatch)
+        If newMatch Then
+            category = DLookup("category", "tablebamatchlist", "hometeam = '" & selection1 & "' and awayteam = '" & selection2 & "' and matchdatestr = '" & Format(Date, "short date") & "'")
+            If category > 10 Then
+                Form_Form2.com_time = category
+            Else
+                Form_Form2.com_time = 10
+            End If
+            Call selectmatch(selection1, selection2)
+        End If
+    End If
+    
+    Debug.Print status
+    'category = DLookup("category", "tablebamatchlist", "hometeam = '" & selection1 & "' and awayteam = '" & selection2 & "' and matchdatestr = '" & Format(Date, "short date") & "'")
     'CHNqno = DLookup("field1", "table1", "id = 24")
     'Debug.Print ht.getElementsByClassName("ipe-ScoreGridHeaderLayout_ExtraData")(0).innerText
     'Debug.Print ht.getElementsByClassName("ipe-ScoreGridCell ipe-ScoreGridCell_TeamName")(1).innerText
@@ -1139,6 +1175,10 @@ Sub catchdata()
     Do While obrowser.ReadyState <> READYSTATE_COMPLETE: DoEvents: Loop
     
     Do While ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0) Is Nothing: DoEvents: Loop
+    
+    If ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(0).innerText <> selection1 And ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(1).innerText <> selection2 Then
+        Call selectmatch(selection1, selection2)
+    End If
     
     qno = ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0).innerText
     mt = ht.getElementsByClassName("ml18-ScoreHeader_Clock")(0).innerText
@@ -2112,3 +2152,6 @@ Public Static Sub Pause(Optional PauseTime As Double)
     
 
 End Sub
+
+
+
