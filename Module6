@@ -1,8 +1,18 @@
 Option Compare Database
-
 Option Explicit
 
-Sub readbasketballmatchlist()
+Public Const machineID = "Fetch1"
+
+Type BADetail
+    hometeam As String
+    awayteam As String
+    matchstage As String
+    matchtime As Integer
+    category As Integer
+End Type
+
+Sub readbasketballmatchlist(selection1 As String, selection2 As String, newMatch As Boolean)
+
     Dim obrowser As WebBrowser
     Dim ht As HTMLDocument
     Dim x As Integer
@@ -12,9 +22,18 @@ Sub readbasketballmatchlist()
     Dim bm As HTMLLIElement
     Dim matchname As String
     Dim matchtime As String
-    Dim quartertime As Date
+    Dim quartertime As String
+    Dim quartersecond As Integer
     Dim hometeam As String
     Dim awayteam As String
+    Dim BAList() As BADetail
+    Dim y As Integer
+    Dim rs As Recordset
+    Dim BAL() As BADetail
+    Dim s1 As String
+    Dim s2 As String
+    
+    'Dim selection As String
     
     Set obrowser = Form_Form2.WebBrowser0.Object
     Set ht = obrowser.Document
@@ -34,9 +53,173 @@ Sub readbasketballmatchlist()
             Pause
             Pause
             Pause
+            y = 0
             For Each em In pm.getElementsByTagName("div")
                 If em.className = "ipn-FixtureButton " Then
                 'If em.className = "ipn-Competition " Then
+                    matchname = ""
+                    
+                    For Each bm In em.getElementsByTagName("div")
+                        If bm.className = "ipn-TeamStack " Then
+                            'Debug.Print bm.innerText
+                            matchname = matchname & bm.innerText
+                            'Debug.Print (matchname)
+                        End If
+                        If bm.className = "ipn-ScoreDisplayStandard_Timer" Then
+                            quartertime = bm.innerText
+                            quartersecond = ct(quartertime)
+                            'Debug.Print quartersecond
+                        End If
+                        If bm.className = "ipn-ScoreDisplayStandard_Period" Then
+                            matchtime = bm.innerText
+                            'Debug.Print matchtime
+                        End If
+                    Next
+                    'matchname = Replace(matchname, vbLf, "v")
+                    'Debug.Print matchname
+                    hometeam = Left(matchname, InStr(1, matchname, vbLf, vbTextCompare))
+                    awayteam = Mid(matchname, InStr(1, matchname, vbLf, vbTextCompare) + 1, 50)
+                    'For x = 1 To Len(awayteam)
+                    '    Debug.Print Asc(Mid(awayteam, x, 1)) & Mid(awayteam, x, 1)
+                    'Next
+                    hometeam = Replace(hometeam, Chr(13), "", , , vbTextCompare)
+                    hometeam = Replace(hometeam, Chr(10), "", , , vbTextCompare)
+                    awayteam = Replace(awayteam, Chr(13), "", , , vbTextCompare)
+                    awayteam = Replace(awayteam, Chr(10), "", , , vbTextCompare)
+                    'Debug.Print "hometeam: " & hometeam, "awayteam " & awayteam
+                    'Debug.Print hometeam & " v " & awayteam
+                    If Left(matchtime, 1) = "Q" Then
+                        ReDim Preserve BAList(0 To y)
+                        BAList(y).awayteam = awayteam
+                        BAList(y).hometeam = hometeam
+                        BAList(y).matchstage = matchtime
+                        BAList(y).matchtime = quartersecond
+                        If quartersecond = 600 Then
+                            BAList(y).category = 10
+                        ElseIf quartersecond > 600 Then
+                            BAList(y).category = 12
+                        Else
+                            BAList(y).category = 0
+                        End If
+                        y = y + 1
+                    End If
+                End If
+            Next
+            
+            'Debug.Print pm.innerText
+        End If
+    Next
+    
+    Call sortmatchpriority(BAList())
+    
+    Set rs = CurrentDb.OpenRecordset("select * from tablebamatchlist where matchdatestr = '" & Format(Date, "short date") & "'")
+    selection1 = ""
+    selection2 = ""
+    s1 = ""
+    s2 = ""
+    newMatch = False
+    For x = 0 To UBound(BAList)
+        If IsNull(DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'")) Then
+            With rs
+            .AddNew
+            ![matchname] = BAList(x).hometeam & " v " & BAList(x).awayteam
+            ![hometeam] = BAList(x).hometeam
+            ![awayteam] = BAList(x).awayteam
+            ![matchstage] = BAList(x).matchstage
+            ![category] = BAList(x).category
+            ![updatetimedate] = Now()
+            ![matchdate] = Date
+            ![matchDatestr] = Date
+            .Update
+            End With
+            selection1 = BAList(x).hometeam
+            selection2 = BAList(x).awayteam
+        Else
+            If DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = 0 And BAList(x).category <> 0 Then
+                CurrentDb.Execute "update tablebamatchlist set category = '" & BAList(x).category & "' where hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'"
+            End If
+            If DLookup("taken", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = False Then
+                selection1 = BAList(x).hometeam
+                selection2 = BAList(x).awayteam
+            ElseIf DLookup("takenby", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = machineID Then
+                s1 = BAList(x).hometeam
+                s2 = BAList(x).awayteam
+            End If
+        End If
+    Next
+    
+    If s1 <> "" And s2 <> "" Then
+        newMatch = False
+        selection1 = s1
+        selection2 = s2
+    ElseIf selection1 <> "" And selection2 <> "" Then
+        newMatch = True
+    End If
+    
+    rs.Close
+    Set rs = Nothing
+    
+End Sub
+Sub sortmatchpriority(BAList() As BADetail)
+    Dim BAL As BADetail
+    Dim i As Integer
+    Dim j As Integer
+    Dim lngMin As Long
+    Dim lngMax As Long
+    lngMin = LBound(BAList)
+    lngMax = UBound(BAList)
+    For i = lngMin To lngMax - 1
+      For j = i + 1 To lngMax
+        If (Mid(BAList(i).matchstage, 2, 1) < Mid(BAList(j).matchstage, 2, 1)) Or (Mid(BAList(i).matchstage, 2, 1) = Mid(BAList(j).matchstage, 2, 1) And BAList(i).matchtime > BAList(j).matchtime) Then
+          BAL = BAList(i)
+          BAList(i) = BAList(j)
+          BAList(j) = BAL
+        End If
+      Next j
+    Next i
+End Sub
+Sub selectmatch(selection1 As String, selection2 As String)
+    Dim obrowser As WebBrowser
+    Dim ht As HTMLDocument
+    Dim x As Integer
+    Dim en As HTMLLIElement
+    Dim pm As HTMLLIElement
+    Dim em As HTMLLIElement
+    Dim bm As HTMLLIElement
+    Dim matchname As String
+    Dim matchtime As String
+    Dim quartertime As String
+    Dim quartersecond As Integer
+    Dim hometeam As String
+    Dim awayteam As String
+    Dim BAList() As BADetail
+    Dim y As Integer
+    Dim rs As Recordset
+    Dim BAL() As BADetail
+    'Dim selection As String
+    
+    'selection = "Dynamo NPU Kiev Women"
+    Set obrowser = Form_Form2.WebBrowser0.Object
+    Set ht = obrowser.Document
+    
+    For Each en In ht.getElementsByClassName("ipn-ClassificationButton")
+        'Debug.Print en.innerText
+        If InStr(1, en.innerText, "Basketball", vbTextCompare) > 0 Then
+            'Debug.Print "yes"
+            Set pm = en.parentElement
+            For Each em In pm.getElementsByTagName("div")
+                If em.className = "ipn-Competition ipn-Competition-closed " Then
+                    em.Click
+                End If
+            Next
+            Pause
+            Pause
+            Pause
+            Pause
+            Pause
+            y = 0
+            For Each em In pm.getElementsByTagName("div")
+                If em.className = "ipn-FixtureButton " Then
                     matchname = ""
                     For Each bm In em.getElementsByTagName("div")
                         If bm.className = "ipn-TeamStack " Then
@@ -46,29 +229,45 @@ Sub readbasketballmatchlist()
                         End If
                         If bm.className = "ipn-ScoreDisplayStandard_Timer" Then
                             quartertime = bm.innerText
-                            Debug.Print quartertime
+                            quartersecond = ct(quartertime)
+                            'Debug.Print quartersecond
                         End If
                         If bm.className = "ipn-ScoreDisplayStandard_Period" Then
                             matchtime = bm.innerText
-                            Debug.Print matchtime
+                            'Debug.Print matchtime
                         End If
                     Next
                     'matchname = Replace(matchname, vbLf, "v")
-                    hometeam = Left(matchname, InStr(1, matchname, vbLf, vbTextCompare) - 1)
+                    hometeam = Left(matchname, InStr(1, matchname, vbLf, vbTextCompare))
                     awayteam = Mid(matchname, InStr(1, matchname, vbLf, vbTextCompare) + 1, 20)
-                    For x = 1 To Len(awayteam)
-                        Debug.Print Asc(Mid(awayteam, x, 1)) & Mid(awayteam, x, 1)
-                    Next
+                    'For x = 1 To Len(awayteam)
+                    '    Debug.Print Asc(Mid(awayteam, x, 1)) & Mid(awayteam, x, 1)
+                    'Next
                     hometeam = Replace(hometeam, Chr(13), "", , , vbTextCompare)
                     hometeam = Replace(hometeam, Chr(10), "", , , vbTextCompare)
                     awayteam = Replace(awayteam, Chr(13), "", , , vbTextCompare)
                     awayteam = Replace(awayteam, Chr(10), "", , , vbTextCompare)
-                    Debug.Print "hometeam: " & hometeam, "awayteam " & awayteam
-                    Debug.Print hometeam & " v " & awayteam
+                    'Debug.Print "hometeam: " & hometeam, "awayteam " & awayteam
+                    'Debug.Print hometeam & " v " & awayteam
+                    If hometeam = selection1 Then
+                        'Debug.Print "found"
+                        em.Click
+                    End If
+                    CurrentDb.Execute "update tablebamatchlist set taken = True, takenby = '" & machineID & "' where hometeam = '" & selection1 & "' and awayteam = '" & selection2 & "' and matchdatestr = '" & Format(Date, "short date") & "'"
+                    Pause
+                    Pause
+                    Pause
+                    Pause
+                    Pause
+                    Pause
+                    Pause
+                    Pause
+                    Pause
                 End If
             Next
+            
             'Debug.Print pm.innerText
         End If
     Next
-    
 End Sub
+
