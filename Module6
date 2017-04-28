@@ -317,3 +317,23 @@ Dim sh As Object, oWin As Object, IE As Object, ht As HTMLDocument
     Debug.Print ht.body.innerText
     
 End Sub
+
+Sub getbrowser()
+Dim ie As Object
+Dim objShell As Object
+Dim objWindow As Object
+Dim objItem As Object
+
+Set objShell = CreateObject("Shell.Application")
+Set objWindow = objShell.Windows()
+For Each objItem In objWindow
+    If LCase(objItem.FullName Like "*iexplore*") Then
+        Set ie = objItem
+        Debug.Print ie.Document.url
+
+    End If
+Next objItem
+
+'Debug.Print ie.Document.url
+
+End Sub
