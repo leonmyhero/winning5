@@ -35,8 +35,21 @@ Sub readbasketballmatchlist(selection1 As String, selection2 As String, newMatch
     
     'Dim selection As String
     
-    Set obrowser = Form_Form2.WebBrowser0.Object
-    Set ht = obrowser.Document
+    Dim shellApplication As Object, oWin As Object
+
+    'On Error GoTo errorhandler
+    'On Error Resume Next
+    
+    'Set obrowser = Form_Form2.WebBrowser0.Object
+    Set shellApplication = CreateObject("Shell.Application")
+
+    For Each oWin In shellApplication.Windows
+        If TypeName(oWin.Document) = "HTMLDocument" Then
+            Set obrowser = oWin
+            Set ht = obrowser.Document
+            Exit For
+        End If
+    Next
     
     For Each en In ht.getElementsByClassName("ipn-ClassificationButton")
         'Debug.Print en.innerText
@@ -199,8 +212,25 @@ Sub selectmatch(selection1 As String, selection2 As String)
     'Dim selection As String
     
     'selection = "Dynamo NPU Kiev Women"
-    Set obrowser = Form_Form2.WebBrowser0.Object
-    Set ht = obrowser.Document
+    
+    Dim shellApplication As Object, oWin As Object
+
+    'On Error GoTo errorhandler
+    'On Error Resume Next
+    
+    'Set obrowser = Form_Form2.WebBrowser0.Object
+    Set shellApplication = CreateObject("Shell.Application")
+
+    For Each oWin In shellApplication.Windows
+        If TypeName(oWin.Document) = "HTMLDocument" Then
+            Set obrowser = oWin
+            Set ht = obrowser.Document
+            Exit For
+        End If
+    Next
+    
+    'Set obrowser = Form_Form2.WebBrowser0.Object
+    'Set ht = obrowser.Document
     
     For Each en In ht.getElementsByClassName("ipn-ClassificationButton")
         'Debug.Print en.innerText
@@ -271,3 +301,19 @@ Sub selectmatch(selection1 As String, selection2 As String)
     Next
 End Sub
 
+Sub getIE()
+Dim sh As Object, oWin As Object, IE As Object, ht As HTMLDocument
+
+    Set sh = CreateObject("Shell.Application")
+
+    For Each oWin In sh.Windows
+        If TypeName(oWin.Document) = "HTMLDocument" Then
+            Set IE = oWin
+            Set ht = IE.Document
+            Exit For
+        End If
+    Next
+
+    Debug.Print ht.body.innerText
+    
+End Sub
