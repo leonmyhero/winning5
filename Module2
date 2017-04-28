@@ -1102,7 +1102,7 @@ Sub catchdata()
     Dim y As Long
     Dim fH As Integer
     Dim fA As Integer
-    Dim sH As Integer
+    Dim sh As Integer
     Dim sA As Integer
     Dim tH As Integer
     Dim ta As Integer
@@ -1119,15 +1119,24 @@ Sub catchdata()
     Dim selection2 As String
     Dim category As Integer
     Dim newMatch As Boolean
-    
+    Dim shellApplication As Object, oWin As Object
 
     On Error GoTo errorhandler
     'On Error Resume Next
     
-    Set obrowser = Form_Form2.WebBrowser0.Object
+    'Set obrowser = Form_Form2.WebBrowser0.Object
+    Set shellApplication = CreateObject("Shell.Application")
+
+    For Each oWin In shellApplication.Windows
+        If TypeName(oWin.Document) = "HTMLDocument" Then
+            Set obrowser = oWin
+            Set ht = obrowser.Document
+            Exit For
+        End If
+    Next
     
-    Set ht = obrowser.Document
-    em = ht.body.innerHTML
+    'Set ht = obrowser.Document
+    'em = ht.body.innerHTML
     
     If Form_Form2.txt_hteam = "" And Form_Form2.txt_ateam = "" Then
         status = "waiting"
@@ -1185,7 +1194,7 @@ Sub catchdata()
     
     fH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(0).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(0).innerText)
     fA = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(1).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(1).innerText)
-    sH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(2).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(2).innerText)
+    sh = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(2).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(2).innerText)
     sA = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(3).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(3).innerText)
     tH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(4).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(4).innerText)
     ta = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(5).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(5).innerText)
@@ -1198,7 +1207,7 @@ Sub catchdata()
     
     Form_Form2.Text18 = fH
     Form_Form2.Text26 = fA
-    Form_Form2.Text19 = sH
+    Form_Form2.Text19 = sh
     Form_Form2.Text27 = sA
     Form_Form2.Text21 = tH
     Form_Form2.Text29 = ta
@@ -1893,9 +1902,23 @@ Sub fetchBasketballOdds(q1spread, q2spread, q3spread, q4spread, h1spread, h2spre
     Dim marketStr As String
     Dim marketscore As Variant
     Dim tempht, tempat As String
+    Dim shellApplication As Object, oWin As Object
+
+    'On Error GoTo errorhandler
+    'On Error Resume Next
     
-    Set obrowser = Form_Form2.WebBrowser0.Object
-    Set ht = obrowser.Document
+    'Set obrowser = Form_Form2.WebBrowser0.Object
+    Set shellApplication = CreateObject("Shell.Application")
+
+    For Each oWin In shellApplication.Windows
+        If TypeName(oWin.Document) = "HTMLDocument" Then
+            Set obrowser = oWin
+            Set ht = obrowser.Document
+            Exit For
+        End If
+    Next
+    'Set obrowser = Form_Form2.WebBrowser0.Object
+    'Set ht = obrowser.Document
     Set rs = CurrentDb.OpenRecordset("select * from tablebasketballmarket where Level is not null")
     
     For Each em In ht.getElementsByClassName("gl-MarketGroup")
