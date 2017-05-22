@@ -337,3 +337,298 @@ Next objItem
 'Debug.Print ie.Document.url
 
 End Sub
+
+Sub traversebasketballmatchlist()
+
+    Dim obrowser As WebBrowser
+    Dim ht As HTMLDocument
+    Dim x As Integer
+    Dim en As HTMLLIElement
+    Dim pm As HTMLLIElement
+    Dim em As HTMLLIElement
+    Dim bm As HTMLLIElement
+    Dim matchname As String
+    Dim matchtime As String
+    Dim quartertime As String
+    Dim quartersecond As Integer
+    Dim hometeam As String
+    Dim awayteam As String
+    Dim BAList() As BADetail
+    Dim y As Integer
+    Dim rs As Recordset
+    Dim BAL() As BADetail
+    Dim s1 As String
+    Dim s2 As String
+    Dim foundBAmatch As Boolean
+    Dim selection1 As String
+    Dim selection2 As String
+    Dim fH As Integer
+    Dim fA As Integer
+    Dim sh As Integer
+    Dim sA As Integer
+    Dim tH As Integer
+    Dim ta As Integer
+    Dim fuH As Integer
+    Dim fuA As Integer
+    Dim mt As String
+    Dim elem As Object
+    'Dim em As String
+    Dim lm As String
+    Dim qno As String
+    Dim EventName As String
+    'Dim selection As String
+    
+    Dim shellApplication As Object, oWin As Object
+
+    'On Error GoTo errorhandler
+    'On Error Resume Next
+    Debug.Print "start", Now()
+    
+    'Set obrowser = Form_Form2.WebBrowser0.Object
+    Set shellApplication = CreateObject("Shell.Application")
+
+    For Each oWin In shellApplication.Windows
+        If TypeName(oWin.Document) = "HTMLDocument" Then
+            Set obrowser = oWin
+            Set ht = obrowser.Document
+            Exit For
+        End If
+    Next
+    
+    foundBAmatch = False
+    
+    For Each en In ht.getElementsByClassName("ipn-ClassificationButton")
+        'Debug.Print en.innerText
+        If InStr(1, en.innerText, "Basketball", vbTextCompare) > 0 Then
+            'Debug.Print "yes"
+            Set pm = en.parentElement
+            For Each em In pm.getElementsByTagName("div")
+                If em.className = "ipn-Competition ipn-Competition-closed " Then
+                    em.Click
+                End If
+            Next
+            Pause
+            Pause
+            Pause
+            Pause
+            Pause
+            y = 0
+            For Each em In pm.getElementsByTagName("div")
+                If em.className = "ipn-FixtureButton " Then
+                'If em.className = "ipn-Competition " Then
+                    matchname = ""
+                    
+                    For Each bm In em.getElementsByTagName("div")
+                        If bm.className = "ipn-TeamStack " Then
+                            'Debug.Print bm.innerText
+                            matchname = matchname & bm.innerText
+                            'Debug.Print (matchname)
+                        End If
+                        If bm.className = "ipn-ScoreDisplayStandard_Timer" Then
+                            quartertime = bm.innerText
+                            quartersecond = ct(quartertime)
+                            'Debug.Print quartersecond
+                        End If
+                        If bm.className = "ipn-ScoreDisplayStandard_Period" Then
+                            matchtime = bm.innerText
+                            'Debug.Print matchtime
+                        End If
+                    Next
+                    'matchname = Replace(matchname, vbLf, "v")
+                    'Debug.Print matchname
+                    hometeam = Left(matchname, InStr(1, matchname, vbLf, vbTextCompare))
+                    awayteam = Mid(matchname, InStr(1, matchname, vbLf, vbTextCompare) + 1, 50)
+                    'For x = 1 To Len(awayteam)
+                    '    Debug.Print Asc(Mid(awayteam, x, 1)) & Mid(awayteam, x, 1)
+                    'Next
+                    hometeam = Replace(hometeam, Chr(13), "", , , vbTextCompare)
+                    hometeam = Replace(hometeam, Chr(10), "", , , vbTextCompare)
+                    awayteam = Replace(awayteam, Chr(13), "", , , vbTextCompare)
+                    awayteam = Replace(awayteam, Chr(10), "", , , vbTextCompare)
+                    'Debug.Print "hometeam: " & hometeam, "awayteam " & awayteam
+                    'Debug.Print hometeam & " v " & awayteam
+                    If Left(matchtime, 1) = "Q" Then
+                        ReDim Preserve BAList(0 To y)
+                        BAList(y).awayteam = awayteam
+                        BAList(y).hometeam = hometeam
+                        BAList(y).matchstage = matchtime
+                        BAList(y).matchtime = quartersecond
+                        If quartersecond = 600 Then
+                            BAList(y).category = 10
+                        ElseIf quartersecond > 600 Then
+                            BAList(y).category = 12
+                        Else
+                            BAList(y).category = 0
+                        End If
+                        em.Click
+                        
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        Do While obrowser.ReadyState <> READYSTATE_COMPLETE: DoEvents: Loop
+                        
+                        'Do While ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0) Is Nothing: DoEvents: Loop
+
+                        
+                        If ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0) Is Nothing Then
+                            If Not ht.getElementsByClassName("lv-ButtonBar_MatchLive lv-ButtonBar_MatchLive-18")(0) Is Nothing Then
+                                ht.getElementsByClassName("lv-ButtonBar_MatchLive lv-ButtonBar_MatchLive-18")(0).Click
+                            Else
+                                Exit Sub
+                            End If
+                        End If
+                        
+                        Do While obrowser.ReadyState <> READYSTATE_COMPLETE: DoEvents: Loop
+                        
+                        Do While ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0) Is Nothing: DoEvents: Loop
+                        
+                        'If ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(0).innerText <> selection1 And ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(1).innerText <> selection2 Then
+                        '    Call selectmatch(selection1, selection2)
+                        'End If
+                        
+                        qno = ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0).innerText
+                        mt = ht.getElementsByClassName("ml18-ScoreHeader_Clock")(0).innerText
+                        
+                        fH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(0).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(0).innerText)
+                        fA = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(1).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(1).innerText)
+                        sh = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(2).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(2).innerText)
+                        sA = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(3).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(3).innerText)
+                        tH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(4).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(4).innerText)
+                        ta = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(5).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(5).innerText)
+                        fuH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(6).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(6).innerText)
+                        fuA = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(7).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(7).innerText)
+                        
+                        'Debug.Print qno, mt
+                        
+                        'Debug.Print fH, fA, sH, sA, tH, ta, fuH, fuA
+                        
+                        Form_Form2.Text18 = fH
+                        Form_Form2.Text26 = fA
+                        Form_Form2.Text19 = sh
+                        Form_Form2.Text27 = sA
+                        Form_Form2.Text21 = tH
+                        Form_Form2.Text29 = ta
+                        Form_Form2.Text22 = fuH
+                        Form_Form2.Text30 = fuA
+                        
+                        Form_Form2.txt_hteam = ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(0).innerText
+                        Form_Form2.txt_ateam = ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(1).innerText
+                        
+                        EventName = Form_Form2.txt_hteam & " v " & Form_Form2.txt_ateam
+                        
+                        If Len(qno) = 2 Then
+                            qno = Mid(qno, 2, 1)
+                        Else
+                            qno = Mid(qno, 3, 1)
+                        End If
+                        
+                        Select Case qno
+                            Case "1"
+                                Form_Form2.Text2 = mt
+                                Form_Form2.Text3 = Form_Form2.com_time & ":00"
+                                Form_Form2.Text5 = Form_Form2.com_time & ":00"
+                                Form_Form2.Text6 = Form_Form2.com_time & ":00"
+                            Case "2"
+                                Form_Form2.Text2 = "00:00"
+                                Form_Form2.Text3 = mt
+                                Form_Form2.Text5 = Form_Form2.com_time & ":00"
+                                Form_Form2.Text6 = Form_Form2.com_time & ":00"
+                            Case "3"
+                                Form_Form2.Text2 = "00:00"
+                                Form_Form2.Text3 = "00:00"
+                                Form_Form2.Text5 = mt
+                                Form_Form2.Text6 = Form_Form2.com_time & ":00"
+                            Case "4"
+                                Form_Form2.Text2 = "00:00"
+                                Form_Form2.Text3 = "00:00"
+                                Form_Form2.Text5 = "00:00"
+                                Form_Form2.Text6 = mt
+                        End Select
+                        
+                        Call calculation(EventName)
+                        'Exit Sub
+'errorhandler:
+                        'Debug.Print Err.Number, Err.Description
+    
+                        y = y + 1
+                    End If
+                End If
+            Next
+            
+            'Debug.Print pm.innerText
+        End If
+    Next
+    
+    'Call sortmatchpriority(BAList())
+    If y > 0 Then
+        foundBAmatch = True
+    End If
+    
+    If foundBAmatch Then
+    
+        'Set rs = CurrentDb.OpenRecordset("select * from tablebamatchlist where matchdatestr = '" & Format(Date, "short date") & "'")
+        selection1 = ""
+        selection2 = ""
+        's1 = ""
+        's2 = ""
+        'newMatch = False
+        For x = 0 To UBound(BAList)
+            'Debug.Print BAList(x).hometeam
+            
+            If IsNull(DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'")) Then
+                Set rs = CurrentDb.OpenRecordset("select * from tablebamatchlist where matchdatestr = '" & Format(Date, "short date") & "'")
+                    With rs
+                    .AddNew
+                    ![matchname] = BAList(x).hometeam & " v " & BAList(x).awayteam
+                    ![hometeam] = BAList(x).hometeam
+                    ![awayteam] = BAList(x).awayteam
+                    ![matchstage] = BAList(x).matchstage
+                    ![category] = BAList(x).category
+                    ![updatetimedate] = Now()
+                    ![matchdate] = Date
+                    ![matchDatestr] = Date
+                    .Update
+                    End With
+                rs.Close
+                Set rs = Nothing
+                
+                selection1 = BAList(x).hometeam
+                selection2 = BAList(x).awayteam
+            Else
+                If DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = 0 And BAList(x).category <> 0 Then
+                    CurrentDb.Execute "update tablebamatchlist set category = '" & BAList(x).category & "' where hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'"
+                End If
+                'If DLookup("taken", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = False Then
+                selection1 = BAList(x).hometeam
+                selection2 = BAList(x).awayteam
+                'ElseIf DLookup("takenby", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = machineID Then
+                '    s1 = BAList(x).hometeam
+                '    s2 = BAList(x).awayteam
+                'End If
+            End If
+        Next
+        'Debug.Print selection1, selection2
+        
+        'Call selectmatch(selection1, selection2)
+    End If
+    
+    'If s1 <> "" And s2 <> "" Then
+    '    newMatch = False
+    '    selection1 = s1
+    '    selection2 = s2
+    'ElseIf selection1 <> "" And selection2 <> "" Then
+    '    newMatch = True
+    'End If
+    
+    'rs.Close
+    'Set rs = Nothing
+    Debug.Print "end", Now()
+End Sub
