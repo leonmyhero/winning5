@@ -22,7 +22,7 @@ Private Sub btn_report_Click()
     Dim category(0 To 6) As String
     Dim x As Integer
     
-    matchname = Me.com_match
+    matchname = DLookup("matchname", "tablebamatchlist", "id = " & Me.com_match)
     matchtime = Me.com_matchtime
     category(0) = "Q1"
     category(1) = "Q2"
@@ -45,7 +45,7 @@ Private Sub btn_report_Click()
 End Sub
 
 Private Sub btn_start_Click()
-    Form_Form2.TimerInterval = 1000
+    Form_Form2.TimerInterval = 30000
 End Sub
 
 Private Sub btn_stop_Click()
@@ -73,7 +73,7 @@ Private Sub Command223_Click()
 End Sub
 
 Private Sub Form_Timer()
-catchdata
+traversebasketballmatchlist
 End Sub
 
 Private Sub lst_1hresult_DblClick(Cancel As Integer)
@@ -82,18 +82,10 @@ Private Sub lst_1hresult_DblClick(Cancel As Integer)
     Call generate1stQreport(matchname, "H1")
 End Sub
 
-Private Sub lst_1htitle_DblClick(Cancel As Integer)
-    Me.Child_subform.SourceObject = "QueryH1 subform"
-End Sub
-
 Private Sub lst_1qResult_DblClick(Cancel As Integer)
     Dim matchname As String
     matchname = Me.txt_hteam & " v " & Me.txt_ateam
     Call generate1stQreport(matchname, "Q1")
-End Sub
-
-Private Sub lst_1qtitle_DblClick(Cancel As Integer)
-    Me.Child_subform.SourceObject = "QueryQ1 subform"
 End Sub
 
 Private Sub lst_2hresult_DblClick(Cancel As Integer)
@@ -102,18 +94,10 @@ Private Sub lst_2hresult_DblClick(Cancel As Integer)
     Call generate1stQreport(matchname, "H2")
 End Sub
 
-Private Sub lst_2htitle_DblClick(Cancel As Integer)
-    Me.Child_subform.SourceObject = "QueryH2 subform"
-End Sub
-
 Private Sub lst_2qResult_DblClick(Cancel As Integer)
     Dim matchname As String
     matchname = Me.txt_hteam & " v " & Me.txt_ateam
     Call generate1stQreport(matchname, "Q2")
-End Sub
-
-Private Sub lst_2qtitle_DblClick(Cancel As Integer)
-    Me.Child_subform.SourceObject = "QueryQ2 subform"
 End Sub
 
 Private Sub lst_3qresult_DblClick(Cancel As Integer)
@@ -122,28 +106,16 @@ Private Sub lst_3qresult_DblClick(Cancel As Integer)
     Call generate1stQreport(matchname, "Q3")
 End Sub
 
-Private Sub lst_3qtitle_DblClick(Cancel As Integer)
-    Me.Child_subform.SourceObject = "QueryQ3 subform"
-End Sub
-
 Private Sub lst_4qresult_DblClick(Cancel As Integer)
     Dim matchname As String
     matchname = Me.txt_hteam & " v " & Me.txt_ateam
     Call generate1stQreport(matchname, "Q4")
 End Sub
 
-Private Sub lst_4qtitle_DblClick(Cancel As Integer)
-    Me.Child_subform.SourceObject = "QueryQ4 subform"
-End Sub
-
 Private Sub lst_totalResult_DblClick(Cancel As Integer)
     Dim matchname As String
     matchname = Me.txt_hteam & " v " & Me.txt_ateam
     Call generate1stQreport(matchname, "Full")
-End Sub
-
-Private Sub lst_totaltile_DblClick(Cancel As Integer)
-    Me.Child_subform.SourceObject = "QueryTotal subform"
 End Sub
 
 Private Sub txt_halfP_AfterUpdate()
