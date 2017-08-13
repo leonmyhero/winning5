@@ -932,6 +932,7 @@ Sub traversebasketballmatchlist()
     'Set rs = Nothing
     Debug.Print "end", Now()
         Exit Sub
+        
 errorhandler:
     Debug.Print Err.Number, Err.Description
 End Sub
