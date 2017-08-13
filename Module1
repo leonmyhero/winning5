@@ -473,5 +473,3 @@ Sub removeRedundantData(ByRef initialarray() As datamatrix)
     Next
 
 End Sub
-
-
