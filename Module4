@@ -465,7 +465,8 @@ Sub FetchSportsTD(matchdate As Date)
         .Update
         End With
     Next
-    
+   
+   
     rs.Close
     Set rs = Nothing
     
