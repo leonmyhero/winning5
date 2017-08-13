@@ -604,5 +604,4 @@ Sub getLiveScoreBAData(matchdate As Date)
     Set rst = Nothing
     rs.Close
     Set rs = Nothing
-
 End Sub
