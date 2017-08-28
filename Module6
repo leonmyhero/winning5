@@ -32,6 +32,7 @@ Sub readbasketballmatchlist(selection1 As String, selection2 As String, newMatch
     Dim BAL() As BADetail
     Dim s1 As String
     Dim s2 As String
+    Dim basket As String
     
     'Dim selection As String
     
@@ -51,9 +52,10 @@ Sub readbasketballmatchlist(selection1 As String, selection2 As String, newMatch
         End If
     Next
     
+    basket = DLookup("Marketheader", "TableBasketballMarket", "ID = 334")
     For Each en In ht.getElementsByClassName("ipn-ClassificationButton")
         'Debug.Print en.innerText
-        If InStr(1, en.innerText, "Basketball", vbTextCompare) > 0 Then
+        If InStr(1, en.innerText, "Basketball", vbTextCompare) > 0 Or InStr(1, en.innerText, basket, vbTextCompare) > 0 Then
             'Debug.Print "yes"
             Set pm = en.parentElement
             For Each em In pm.getElementsByTagName("div")
@@ -378,6 +380,9 @@ Sub traversebasketballmatchlist()
     Dim lm As String
     Dim qno As String
     Dim EventName As String
+    Dim basket As String
+    Dim quar As String
+    
     'Dim selection As String
     
     Dim shellApplication As Object, oWin As Object
@@ -398,10 +403,12 @@ Sub traversebasketballmatchlist()
     Next
     
     foundBAmatch = False
+    basket = DLookup("Marketheader", "TableBasketballMarket", "ID = 334")
+    quar = DLookup("Marketheader", "TableBasketballMarket", "ID = 335")
     
     For Each en In ht.getElementsByClassName("ipn-ClassificationButton")
         'Debug.Print en.innerText
-        If InStr(1, en.innerText, "Basketball", vbTextCompare) > 0 Then
+        If InStr(1, en.innerText, "Basketball", vbTextCompare) > 0 Or InStr(1, en.innerText, basket, vbTextCompare) > 0 Then
             'Debug.Print "yes"
             Set pm = en.parentElement
             For Each em In pm.getElementsByTagName("div")
@@ -449,7 +456,7 @@ Sub traversebasketballmatchlist()
                     awayteam = Replace(awayteam, Chr(10), "", , , vbTextCompare)
                     'Debug.Print "hometeam: " & hometeam, "awayteam " & awayteam
                     'Debug.Print hometeam & " v " & awayteam
-                    If Left(matchtime, 1) = "Q" Then
+                    If Left(matchtime, 1) = "Q" Or Left(matchtime, 1) = quar Then
                         ReDim Preserve BAList(0 To y)
                         BAList(y).awayteam = awayteam
                         BAList(y).hometeam = hometeam
@@ -932,7 +939,636 @@ Sub traversebasketballmatchlist()
     'Set rs = Nothing
     Debug.Print "end", Now()
         Exit Sub
+errorhandler:
+    Debug.Print Err.Number, Err.Description
+End Sub
+
+Sub autoplacebet()
+
+    Dim obrowser As WebBrowser
+    Dim ht As HTMLDocument
+    Dim x As Integer
+    Dim en As HTMLLIElement
+    Dim pm As HTMLLIElement
+    Dim em As HTMLLIElement
+    Dim bm As HTMLLIElement
+    Dim matchname As String
+    Dim matchtime As String
+    Dim quartertime As String
+    Dim quartersecond As Integer
+    Dim hometeam As String
+    Dim awayteam As String
+    Dim BAList() As BADetail
+    Dim y As Integer
+    Dim rs As Recordset
+    Dim BAL() As BADetail
+    Dim s1 As String
+    Dim s2 As String
+    Dim foundBAmatch As Boolean
+    Dim selection1 As String
+    Dim selection2 As String
+    Dim fH As Integer
+    Dim fA As Integer
+    Dim sh As Integer
+    Dim sA As Integer
+    Dim tH As Integer
+    Dim ta As Integer
+    Dim fuH As Integer
+    Dim fuA As Integer
+    Dim mt As String
+    Dim elem As Object
+    'Dim em As String
+    Dim lm As String
+    Dim qno As String
+    Dim EventName As String
+    Dim basket As String
+    Dim quar As String
+    
+    'Dim selection As String
+    
+    Dim shellApplication As Object, oWin As Object
+
+    On Error GoTo errorhandler
+    'On Error Resume Next
+    Debug.Print "start", Now()
+    
+    'Set obrowser = Form_Form2.WebBrowser0.Object
+    Set shellApplication = CreateObject("Shell.Application")
+
+    For Each oWin In shellApplication.Windows
+        If TypeName(oWin.Document) = "HTMLDocument" Then
+            Set obrowser = oWin
+            Set ht = obrowser.Document
+            Exit For
+        End If
+    Next
+    
+    foundBAmatch = False
+    basket = DLookup("Marketheader", "TableBasketballMarket", "ID = 334")
+    quar = DLookup("Marketheader", "TableBasketballMarket", "ID = 335")
+    
+    For Each en In ht.getElementsByClassName("ipn-ClassificationButton")
+        'Debug.Print en.innerText
+        If InStr(1, en.innerText, "Basketball", vbTextCompare) > 0 Or InStr(1, en.innerText, basket, vbTextCompare) > 0 Then
+            'Debug.Print "yes"
+            Set pm = en.parentElement
+            For Each em In pm.getElementsByTagName("div")
+                If em.className = "ipn-Competition ipn-Competition-closed " Then
+                    em.Click
+                End If
+            Next
+            Pause
+            Pause
+            Pause
+            Pause
+            Pause
+            y = 0
+            For Each em In pm.getElementsByTagName("div")
+                If em.className = "ipn-FixtureButton " Then
+                'If em.className = "ipn-Competition " Then
+                    matchname = ""
+                    
+                    For Each bm In em.getElementsByTagName("div")
+                        If bm.className = "ipn-TeamStack " Then
+                            'Debug.Print bm.innerText
+                            matchname = matchname & bm.innerText
+                            'Debug.Print (matchname)
+                        End If
+                        If bm.className = "ipn-ScoreDisplayStandard_Timer" Then
+                            quartertime = bm.innerText
+                            quartersecond = ct(quartertime)
+                            'Debug.Print quartersecond
+                        End If
+                        If bm.className = "ipn-ScoreDisplayStandard_Period" Then
+                            matchtime = bm.innerText
+                            'Debug.Print matchtime
+                        End If
+                    Next
+                    'matchname = Replace(matchname, vbLf, "v")
+                    'Debug.Print matchname
+                    hometeam = Left(matchname, InStr(1, matchname, vbLf, vbTextCompare))
+                    awayteam = Mid(matchname, InStr(1, matchname, vbLf, vbTextCompare) + 1, 50)
+                    'For x = 1 To Len(awayteam)
+                    '    Debug.Print Asc(Mid(awayteam, x, 1)) & Mid(awayteam, x, 1)
+                    'Next
+                    hometeam = Replace(hometeam, Chr(13), "", , , vbTextCompare)
+                    hometeam = Replace(hometeam, Chr(10), "", , , vbTextCompare)
+                    awayteam = Replace(awayteam, Chr(13), "", , , vbTextCompare)
+                    awayteam = Replace(awayteam, Chr(10), "", , , vbTextCompare)
+                    'Debug.Print "hometeam: " & hometeam, "awayteam " & awayteam
+                    'Debug.Print hometeam & " v " & awayteam
+                    If Left(matchtime, 1) = "Q" Or Left(matchtime, 1) = quar Then
+                        ReDim Preserve BAList(0 To y)
+                        BAList(y).awayteam = awayteam
+                        BAList(y).hometeam = hometeam
+                        BAList(y).matchstage = matchtime
+                        BAList(y).matchtime = quartersecond
+                        If quartersecond = 600 Then
+                            BAList(y).category = 10
+                        ElseIf quartersecond > 600 Then
+                            BAList(y).category = 12
+                        Else
+                            BAList(y).category = 0
+                        End If
+                        em.Click
+                        
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        'Pause
+                        Do While obrowser.ReadyState <> READYSTATE_COMPLETE: DoEvents: Loop
+                        
+                        'Do While ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0) Is Nothing: DoEvents: Loop
+
+                        
+                        If ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0) Is Nothing Then
+                            If Not ht.getElementsByClassName("lv-ButtonBar_MatchLive lv-ButtonBar_MatchLive-18")(0) Is Nothing Then
+                                ht.getElementsByClassName("lv-ButtonBar_MatchLive lv-ButtonBar_MatchLive-18")(0).Click
+                            Else
+                                Exit Sub
+                            End If
+                        End If
+                        
+                        Do While obrowser.ReadyState <> READYSTATE_COMPLETE: DoEvents: Loop
+                        
+                        Do While ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0) Is Nothing: DoEvents: Loop
+                        
+                        'If ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(0).innerText <> selection1 And ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(1).innerText <> selection2 Then
+                        '    Call selectmatch(selection1, selection2)
+                        'End If
+                        
+                        qno = ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0).innerText
+                        mt = ht.getElementsByClassName("ml18-ScoreHeader_Clock")(0).innerText
+                        
+                        fH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(0).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(0).innerText)
+                        fA = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(1).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(1).innerText)
+                        sh = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(2).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(2).innerText)
+                        sA = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(3).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(3).innerText)
+                        tH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(4).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(4).innerText)
+                        ta = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(5).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(5).innerText)
+                        fuH = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(6).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(6).innerText)
+                        fuA = IIf(Asc(ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(7).innerText) = 32, 0, ht.getElementsByClassName("ipe-ScoreGridCell_TextClass18 ipe-ScoreGridCell_Text")(7).innerText)
+                        
+                        'Debug.Print qno, mt
+                        
+                        'Debug.Print fH, fA, sH, sA, tH, ta, fuH, fuA
+                        
+                        Form_Form2.Text18 = fH
+                        Form_Form2.Text26 = fA
+                        Form_Form2.Text19 = sh
+                        Form_Form2.Text27 = sA
+                        Form_Form2.Text21 = tH
+                        Form_Form2.Text29 = ta
+                        Form_Form2.Text22 = fuH
+                        Form_Form2.Text30 = fuA
+                        
+                        Form_Form2.txt_hteam = ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(0).innerText
+                        Form_Form2.txt_ateam = ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(1).innerText
+                        
+                        EventName = Form_Form2.txt_hteam & " v " & Form_Form2.txt_ateam
+                        
+                        If Len(qno) = 2 Then
+                            qno = Mid(qno, 2, 1)
+                        Else
+                            qno = Mid(qno, 3, 1)
+                        End If
+                        
+                        Select Case qno
+                            Case "1"
+                                Form_Form2.Text2 = mt
+                                Form_Form2.Text3 = Form_Form2.com_time & ":00"
+                                Form_Form2.Text5 = Form_Form2.com_time & ":00"
+                                Form_Form2.Text6 = Form_Form2.com_time & ":00"
+                            Case "2"
+                                Form_Form2.Text2 = "00:00"
+                                Form_Form2.Text3 = mt
+                                Form_Form2.Text5 = Form_Form2.com_time & ":00"
+                                Form_Form2.Text6 = Form_Form2.com_time & ":00"
+                            Case "3"
+                                Form_Form2.Text2 = "00:00"
+                                Form_Form2.Text3 = "00:00"
+                                Form_Form2.Text5 = mt
+                                Form_Form2.Text6 = Form_Form2.com_time & ":00"
+                            Case "4"
+                                Form_Form2.Text2 = "00:00"
+                                Form_Form2.Text3 = "00:00"
+                                Form_Form2.Text5 = "00:00"
+                                Form_Form2.Text6 = mt
+                        End Select
+                        
+                        Form_Form2.Text10 = ct(Form_Form2.Text2)
+                        Form_Form2.Text11 = ct(Form_Form2.Text3)
+                        Form_Form2.Text12 = Form_Form2.Text10 + Form_Form2.Text11
+                        Form_Form2.Text13 = ct(Form_Form2.Text5)
+                        Form_Form2.Text14 = ct(Form_Form2.Text6)
+                        Form_Form2.Text15 = Form_Form2.Text13 + Form_Form2.Text14
+                        Form_Form2.Text16 = Form_Form2.Text12 + Form_Form2.Text15
+                    
+                        Form_Form2.Text20 = Form_Form2.Text18 + Form_Form2.Text19
+                        Form_Form2.Text28 = Form_Form2.Text26 + Form_Form2.Text27
+                        Form_Form2.Text23 = Form_Form2.Text21 + Form_Form2.Text22
+                        Form_Form2.Text31 = Form_Form2.Text30 + Form_Form2.Text29
+                        
+                        Form_Form2.Text32 = Form_Form2.Text31 + Form_Form2.Text28
+                        Form_Form2.Text24 = Form_Form2.Text23 + Form_Form2.Text20
+                        
+                        Form_Form2.Text34 = Form_Form2.Text18 + Form_Form2.Text26
+                        Form_Form2.Text35 = Form_Form2.Text19 + Form_Form2.Text27
+                        Form_Form2.Text36 = Form_Form2.Text20 + Form_Form2.Text28
+                        Form_Form2.Text37 = Form_Form2.Text21 + Form_Form2.Text29
+                        Form_Form2.Text38 = Form_Form2.Text22 + Form_Form2.Text30
+                        Form_Form2.Text39 = Form_Form2.Text23 + Form_Form2.Text31
+                        Form_Form2.Text40 = Form_Form2.Text24 + Form_Form2.Text32
+                        
+                        Form_Form2.Text42 = Form_Form2.Text18 - Form_Form2.Text26
+                        Form_Form2.Text43 = Form_Form2.Text19 - Form_Form2.Text27
+                        Form_Form2.Text44 = Form_Form2.Text20 - Form_Form2.Text28
+                        Form_Form2.Text45 = Form_Form2.Text21 - Form_Form2.Text29
+                        Form_Form2.Text46 = Form_Form2.Text22 - Form_Form2.Text30
+                        Form_Form2.Text47 = Form_Form2.Text23 - Form_Form2.Text31
+                        Form_Form2.Text48 = Form_Form2.Text24 - Form_Form2.Text32
+                        
+                        Form_Form2.Text50 = Form_Form2.com_time * 60 - Form_Form2.Text10
+                        Form_Form2.Text51 = Form_Form2.com_time * 60 - Form_Form2.Text11
+                        Form_Form2.Text52 = Form_Form2.com_time * 60 * 2 - Form_Form2.Text12
+                        Form_Form2.Text53 = Form_Form2.com_time * 60 - Form_Form2.Text13
+                        Form_Form2.Text54 = Form_Form2.com_time * 60 - Form_Form2.Text14
+                        Form_Form2.Text55 = Form_Form2.com_time * 60 * 2 - Form_Form2.Text15
+                        Form_Form2.Text56 = Form_Form2.com_time * 60 * 4 - Form_Form2.Text16
+                        
+                        'fetchbasketball market
+                        
+                            Dim rst As Recordset
+    Dim marketgroup As String
+    Dim marketheader As String
+    Dim el As HTMLLIElement
+    Dim ec As HTMLLIElement
+    Dim eo As HTMLLIElement
+    Dim ee As HTMLLIElement
+    Dim marketfound As Boolean
+    Dim level As String
+    Dim range As String
+    Dim q1spread, q2spread, q3spread, q4spread, h1spread, h2spread, fspread As Single, q1tpoint, q1hpoint, q1apoint, q2tpoint, q2hpoint, q2apoint, q3tpoint, q3hpoint, q3apoint, q4tpoint, q4hpoint, q4apoint, h1tpoint, h1hpoint, h1apoint, h2tpoint, h2hpoint, h2apoint, ftpoint, fhpoint, fapoint As Single
+    Dim q1 As String, q2 As String, q3 As String, q4 As String, h1 As String, h2 As String, f As String
+    Dim marketStr As String
+    Dim marketscore As Variant
+    Dim tempht, tempat As String
+    
+                            Set rst = CurrentDb.OpenRecordset("select * from tablebasketballmarket where Level is not null")
+    
+    For Each el In ht.getElementsByClassName("gl-MarketGroup")
+        marketfound = False
         
+        For Each eo In el.getElementsByTagName("div")
+            If eo.className = "gl-MarketGroup_Wrapper " Then
+                marketfound = True
+            End If
+        Next
+        If marketfound = False Then
+            el.Click
+            Pause
+            Pause
+            Pause
+        End If
+    Next
+    
+    For Each el In ht.getElementsByClassName("gl-MarketGroup")
+        marketfound = False
+
+        For Each eo In el.getElementsByTagName("span")
+            If eo.className = "gl-MarketGroupButton_Text" Then
+                marketgroup = eo.innerText
+                level = ""
+                range = ""
+                rst.MoveFirst
+                Do While Not rst.EOF
+                    If marketgroup = rst.Fields("MarketGroupName") Then
+                        level = rst.Fields("level").Value
+                        range = rst.Fields("range").Value
+                        marketfound = True
+                        'Debug.Print marketgroup, level, range
+                        Exit Do
+                    End If
+                    rst.MoveNext
+                Loop
+            End If
+        Next
+        'Debug.Print level, marketgroup
+            If marketfound Then
+                If level = "VS" Or level = "VP" Then
+                    x = 0
+
+                    For Each ec In el.getElementsByTagName("div")
+                        If ec.className = "gl-MarketColumnHeader " Then
+                            marketheader = ec.innerText
+                            rst.MoveFirst
+                            Do While Not rst.EOF
+                                If marketheader = rst.Fields("Marketheader").Value Then
+                                    level = rst.Fields("level").Value
+      
+                                    If el.getElementsByTagName("div")(x + 1).getElementsByTagName("span").length = 2 Then
+                                        marketStr = el.getElementsByTagName("div")(x + 1).getElementsByTagName("span")(0).innerText
+                                        'el.getElementsByTagName("div")(x + 1).Click
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+
+                        
+                                    ElseIf el.getElementsByTagName("div")(x + 1).getElementsByTagName("span").length = 3 Then
+                                        marketStr = el.getElementsByTagName("div")(x + 1).getElementsByTagName("span")(1).innerText
+                                        'el.getElementsByTagName("div")(x + 1).Click
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                        Pause
+                                    End If
+                                    'Debug.Print level, marketheader, marketStr
+                                    Select Case range
+                                        Case "Q1"
+                                            If IsNumeric(marketStr) Then
+                                                If level = "VS" Then
+                                                    q1spread = CSng(marketStr)
+                                                Else
+                                                    q1tpoint = CSng(marketStr)
+                                                End If
+                                            End If
+                                            q1 = q1 & marketheader & ": " & marketStr & vbNewLine
+                                            'q1 = q1 & em.getElementsByTagName("div")(x + 1).innerText & vbNewLine
+                                            'q1 = q1 & em.getElementsByTagName("div")(x + 2).innerText & vbNewLine
+                                        Case "Q2"
+                                            If IsNumeric(marketStr) Then
+                                                If level = "VS" Then
+                                                    q2spread = CSng(marketStr)
+                                                Else
+                                                    q2tpoint = CSng(marketStr)
+                                                End If
+                                            End If
+                                            q2 = q2 & marketheader & ": " & marketStr & vbNewLine
+                                            'q2 = q2 & em.getElementsByTagName("div")(x + 1).innerText & vbNewLine
+                                            'q2 = q2 & em.getElementsByTagName("div")(x + 2).innerText & vbNewLine
+                                        Case "Q3"
+                                            If IsNumeric(marketStr) Then
+                                                If level = "VS" Then
+                                                    q3spread = CSng(marketStr)
+                                                Else
+                                                    q3tpoint = CSng(marketStr)
+                                                End If
+                                            End If
+                                            q3 = q3 & marketheader & ": " & marketStr & vbNewLine
+                                            'q3 = q3 & em.getElementsByTagName("div")(x + 1).innerText & vbNewLine
+                                            'q3 = q3 & em.getElementsByTagName("div")(x + 2).innerText & vbNewLine
+                                        Case "Q4"
+                                            If IsNumeric(marketStr) Then
+                                                If level = "VS" Then
+                                                    q4spread = CSng(marketStr)
+                                                Else
+                                                    q4tpoint = CSng(marketStr)
+                                                End If
+                                            End If
+                                            q4 = q4 & marketheader & ": " & marketStr & vbNewLine
+                                            'q4 = q4 & em.getElementsByTagName("div")(x + 1).innerText & vbNewLine
+                                            'q4 = q4 & em.getElementsByTagName("div")(x + 2).innerText & vbNewLine
+                                        Case "H1"
+                                            If IsNumeric(marketStr) Then
+                                                If level = "VS" Then
+                                                    h1spread = CSng(marketStr)
+                                                Else
+                                                    h1tpoint = CSng(marketStr)
+                                                End If
+                                            End If
+                                            h1 = h1 & marketheader & ": " & marketStr & vbNewLine
+                                            'h1 = h1 & em.getElementsByTagName("div")(x + 1).innerText & vbNewLine
+                                            'h1 = h1 & em.getElementsByTagName("div")(x + 2).innerText & vbNewLine
+                                        Case "H2"
+                                            If IsNumeric(marketStr) Then
+                                                If level = "VS" Then
+                                                    h2spread = CSng(marketStr)
+                                                Else
+                                                    h2tpoint = CSng(marketStr)
+                                                End If
+                                            End If
+                                            h2 = h2 & marketheader & ": " & marketStr & vbNewLine
+                                            'h2 = h2 & em.getElementsByTagName("div")(x + 1).innerText & vbNewLine
+                                            'h2 = h2 & em.getElementsByTagName("div")(x + 2).innerText & vbNewLine
+                                        Case "F"
+                                            If IsNumeric(marketStr) Then
+                                                If level = "VS" Then
+                                                    fspread = CSng(marketStr)
+                                                Else
+                                                    ftpoint = CSng(marketStr)
+                                                End If
+                                            End If
+                                            f = f & marketheader & ": " & marketStr & vbNewLine
+                                            'f = f & em.getElementsByTagName("div")(x + 1).innerText & vbNewLine
+                                            'f = f & em.getElementsByTagName("div")(x + 2).innerText & vbNewLine
+                                    End Select
+                                    Exit Do
+                                End If
+                                rst.MoveNext
+                            Loop
+                        End If
+                        x = x + 1
+                    Next
+                Else
+                    For Each ec In el.getElementsByTagName("div")
+                        If ec.className = "gl-MarketGroup_Wrapper " Then
+                            If ec.getElementsByTagName("span").length = 8 Then
+                                marketStr = ec.getElementsByTagName("span")(0).innerText & vbNewLine & ec.getElementsByTagName("span")(4).innerText
+                                
+                                marketscore = Split(ec.getElementsByTagName("span")(0).innerText, " ", , vbTextCompare)
+                                tempht = marketscore(UBound(marketscore))
+                                marketscore = Split(ec.getElementsByTagName("span")(4).innerText, " ", , vbTextCompare)
+                                tempat = marketscore(UBound(marketscore))
+                            End If
+                            Select Case range
+                                Case "Q1"
+                                    q1 = q1 & marketStr & vbNewLine
+                                    If IsNumeric(tempht) Then
+                                        q1hpoint = CSng(tempht)
+                                    End If
+                                    If IsNumeric(tempat) Then
+                                        q1apoint = CSng(tempat)
+                                    End If
+                                    'q1 = q1 & en.innerText & vbNewLine
+                                    'q1 = q1 & en.innerText & vbNewLine
+                                Case "Q2"
+                                    q2 = q2 & marketStr & vbNewLine
+                                    If IsNumeric(tempht) Then
+                                        q2hpoint = CSng(tempht)
+                                    End If
+                                    If IsNumeric(tempat) Then
+                                        q2apoint = CSng(tempat)
+                                    End If
+                                    'q2 = q2 & en.innerText & vbNewLine
+                                    'q2 = q2 & en.innerText & vbNewLine
+                                Case "Q3"
+                                    q3 = q3 & marketStr & vbNewLine
+                                    If IsNumeric(tempht) Then
+                                        q3hpoint = CSng(tempht)
+                                    End If
+                                    If IsNumeric(tempat) Then
+                                        q3apoint = CSng(tempat)
+                                    End If
+                                    'q3 = q3 & en.innerText & vbNewLine
+                                Case "Q4"
+                                    q4 = q4 & marketStr & vbNewLine
+                                    If IsNumeric(tempht) Then
+                                        q4hpoint = CSng(tempht)
+                                    End If
+                                    If IsNumeric(tempat) Then
+                                        q4apoint = CSng(tempat)
+                                    End If
+                                    'q4 = q4 & en.innerText & vbNewLine
+                                Case "H1"
+                                    h1 = h1 & marketStr & vbNewLine
+                                    If IsNumeric(tempht) Then
+                                        h1hpoint = CSng(tempht)
+                                    End If
+                                    If IsNumeric(tempat) Then
+                                        h1apoint = CSng(tempat)
+                                    End If
+                                    'h1 = h1 & en.innerText & vbNewLine
+                                Case "H2"
+                                    h2 = h2 & marketStr & vbNewLine
+                                    If IsNumeric(tempht) Then
+                                        h2hpoint = CSng(tempht)
+                                    End If
+                                    If IsNumeric(tempat) Then
+                                        h2apoint = CSng(tempat)
+                                    End If
+                                    'h2 = h2 & en.innerText & vbNewLine
+                                Case "F"
+                                    f = f & marketStr & vbNewLine
+                                    If IsNumeric(tempht) Then
+                                        fhpoint = CSng(tempht)
+                                    End If
+                                    If IsNumeric(tempat) Then
+                                        fapoint = CSng(tempat)
+                                    End If
+                                    'f = f & en.innerText & vbNewLine
+                            End Select
+                        End If
+                    Next
+                End If
+            End If
+
+    Next
+
+    'Debug.Print "h2spread", h2spread
+    Form_Form2.txt_1stQ = q1
+    Form_Form2.txt_2ndQ = q2
+    Form_Form2.txt_3rdQ = q3
+    Form_Form2.txt_4thQ = q4
+    Form_Form2.txt_1stH = h1
+    Form_Form2.txt_2ndH = h2
+    Form_Form2.txt_full = f
+    
+    rst.Close
+    Set rst = Nothing
+                        
+
+                        'calculate
+                        Call calculation2(EventName, q1spread, q2spread, q3spread, q4spread, h1spread, h2spread, fspread, q1tpoint, q1hpoint, q1apoint, q2tpoint, q2hpoint, q2apoint, q3tpoint, q3hpoint, q3apoint, q4tpoint, q4hpoint, q4apoint, h1tpoint, h1hpoint, h1apoint, h2tpoint, h2hpoint, h2apoint, ftpoint, fhpoint, fapoint)
+                        'Exit Sub
+'errorhandler:
+                        'Debug.Print Err.Number, Err.Description
+    
+                        y = y + 1
+                    End If
+                End If
+            Next
+            
+            'Debug.Print pm.innerText
+        End If
+    Next
+    
+    'Call sortmatchpriority(BAList())
+    If y > 0 Then
+        foundBAmatch = True
+    End If
+    
+    If foundBAmatch Then
+    
+        'Set rs = CurrentDb.OpenRecordset("select * from tablebamatchlist where matchdatestr = '" & Format(Date, "short date") & "'")
+        selection1 = ""
+        selection2 = ""
+        's1 = ""
+        's2 = ""
+        'newMatch = False
+        For x = 0 To UBound(BAList)
+            'Debug.Print BAList(x).hometeam
+            
+            If IsNull(DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'")) Then
+                Set rs = CurrentDb.OpenRecordset("select * from tablebamatchlist where matchdatestr = '" & Format(Date, "short date") & "'")
+                    With rs
+                    .AddNew
+                    ![matchname] = BAList(x).hometeam & " v " & BAList(x).awayteam
+                    ![hometeam] = BAList(x).hometeam
+                    ![awayteam] = BAList(x).awayteam
+                    ![matchstage] = BAList(x).matchstage
+                    ![category] = BAList(x).category
+                    ![updatetimedate] = Now()
+                    ![matchdate] = Date
+                    ![matchDatestr] = Date
+                    .Update
+                    End With
+                rs.Close
+                Set rs = Nothing
+                
+                'selection1 = BAList(x).hometeam
+                'selection2 = BAList(x).awayteam
+            Else
+                If DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = 0 And BAList(x).category <> 0 Then
+                    CurrentDb.Execute "update tablebamatchlist set category = '" & BAList(x).category & "' where hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'"
+                End If
+                'If DLookup("taken", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = False Then
+                'selection1 = BAList(x).hometeam
+                'selection2 = BAList(x).awayteam
+                'ElseIf DLookup("takenby", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = machineID Then
+                '    s1 = BAList(x).hometeam
+                '    s2 = BAList(x).awayteam
+                'End If
+            End If
+        Next
+        
+    Debug.Print ht.getElementsByClassName("stk bs-Stake_TextBox").length
+    For Each ee In ht.getElementsByClassName("bs-Stake_TextBox")
+        Debug.Print ee.outerHTML
+        ee.Value = 2.1
+    Next
+        'Debug.Print selection1, selection2
+        
+        'Call selectmatch(selection1, selection2)
+    End If
+    
+    'If s1 <> "" And s2 <> "" Then
+    '    newMatch = False
+    '    selection1 = s1
+    '    selection2 = s2
+    'ElseIf selection1 <> "" And selection2 <> "" Then
+    '    newMatch = True
+    'End If
+    
+    'rs.Close
+    'Set rs = Nothing
+    Debug.Print "end", Now()
+        Exit Sub
 errorhandler:
     Debug.Print Err.Number, Err.Description
 End Sub
