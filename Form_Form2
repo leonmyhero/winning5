@@ -22,6 +22,8 @@ Private Sub btn_report_Click()
     Dim category(0 To 6) As String
     Dim x As Integer
     
+    Me.lab_report.Caption = "Starting....."
+    
     matchname = DLookup("matchname", "tablebamatchlist", "id = " & Me.com_match)
     matchtime = Me.com_matchtime
     category(0) = "Q1"
@@ -42,6 +44,8 @@ Private Sub btn_report_Click()
             Call generate1stQreport(matchname, category(x))
         Next
     End If
+    
+    Me.lab_report.Caption = "End"
 End Sub
 
 Private Sub btn_start_Click()
