@@ -273,7 +273,8 @@ Public Sub writehtmlfile(filename As String, filecontent As String)
         f.Delete (True)
     End If
 
-    Set f = fs.CreateTextFile(filename)
+    Set f = fs.CreateTextFile(filename, True, True)
+    'Debug.Print "filecontent", filecontent
     f.WriteLine filecontent
     f.Close
 
@@ -788,7 +789,7 @@ Sub generate1stQreport(matchname As String, matchtime As String)
     End If
     
 End Sub
- 
+
 Sub testing()
     Call generate1stQreport("AEK Larnaca v Etha Engomis", "full")
 End Sub
