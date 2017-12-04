@@ -2,6 +2,7 @@ Option Compare Database
 Option Explicit
 
 Public Const machineID = "Fetch1"
+Public matchCount As Long
 
 Type BADetail
     hometeam As String
@@ -382,14 +383,23 @@ Sub traversebasketballmatchlist()
     Dim EventName As String
     Dim basket As String
     Dim quar As String
+    Dim timegap As Double
     
     'Dim selection As String
     
     Dim shellApplication As Object, oWin As Object
 
-    On Error GoTo errorhandler
-    'On Error Resume Next
+    'On Error GoTo errorhandler
+    On Error Resume Next
     Debug.Print "start", Now()
+    Debug.Print matchCount
+    If matchCount = 0 Then
+        matchCount = 1
+    End If
+    timegap = matchCount * 3000
+    
+    Debug.Print timegap
+    Form_Form2.TimerInterval = matchCount * 3000
     
     'Set obrowser = Form_Form2.WebBrowser0.Object
     Set shellApplication = CreateObject("Shell.Application")
@@ -875,9 +885,15 @@ Sub traversebasketballmatchlist()
     Next
     
     'Call sortmatchpriority(BAList())
+    'Dim timegap As Long
+    
     If y > 0 Then
+
         foundBAmatch = True
+        
+        'Form_Form2.TimerInterval = 3000
     End If
+    matchCount = y
     
     If foundBAmatch Then
     
@@ -988,7 +1004,7 @@ Sub autoplacebet()
     
     Dim shellApplication As Object, oWin As Object
 
-    On Error GoTo errorhandler
+    'On Error GoTo errorhandler
     'On Error Resume Next
     Debug.Print "start", Now()
     
@@ -1288,7 +1304,7 @@ Sub autoplacebet()
                         
                                     ElseIf el.getElementsByTagName("div")(x + 1).getElementsByTagName("span").length = 3 Then
                                         marketStr = el.getElementsByTagName("div")(x + 1).getElementsByTagName("span")(1).innerText
-                                        'el.getElementsByTagName("div")(x + 1).Click
+                                        el.getElementsByTagName("div")(x + 1).Click
                                         Pause
                                         Pause
                                         Pause
@@ -1547,8 +1563,16 @@ Sub autoplacebet()
             End If
         Next
         
-    Debug.Print ht.getElementsByClassName("stk bs-Stake_TextBox").length
-    For Each ee In ht.getElementsByClassName("bs-Stake_TextBox")
+    For Each oWin In shellApplication.Windows
+        If TypeName(oWin.Document) = "HTMLDocument" Then
+            Set obrowser = oWin
+            Set ht = obrowser.Document
+            Exit For
+        End If
+    Next
+        
+    Debug.Print "length" & ht.getElementsByTagName("input").length
+    For Each ee In ht.getElementsByClassName("stk bs-Stake_TextBox")
         Debug.Print ee.outerHTML
         ee.Value = 2.1
     Next
