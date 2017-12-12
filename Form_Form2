@@ -1,5 +1,54 @@
 Option Compare Database
 
+Private Sub btn_allreport_Click()
+
+    Dim matchname As String
+    Dim matchtime As String
+    Dim category(0 To 6) As String
+    Dim x As Integer
+    Dim filecontent As String
+    Dim filename As String
+    Dim fileFolder As String
+    Dim matchlist As String
+
+    matchtime = "All"
+    category(0) = "Q1"
+    category(1) = "Q2"
+    category(2) = "Q3"
+    category(3) = "Q4"
+    category(4) = "H1"
+    category(5) = "H2"
+    category(6) = "Full"
+    
+    Me.lab_reportstatus.Caption = "Starting....."
+    
+    fileFolder = "I:\Asian Support Department\Asian Customer Account Advisor\member files\FRM PC\Members files\Mingtao Zhang\Toolbox\FIFA\BA\"
+    filename = fileFolder & "Main.html"
+    filecontent = DLookup("html", "tablehtmlcode", "title = 'Main'")
+    
+    For Each oitem In Me.lst_matchlist.ItemsSelected
+        matchname = DLookup("matchname", "tablebamatchlist", "id = " & Me.lst_matchlist.ItemData(oitem))
+
+        Call generate1stQreport(matchname, "All")
+
+        matchlist = matchlist & "<li><a href='I:\Asian Support Department\Asian Customer Account Advisor\member files\FRM PC\Members files\Mingtao Zhang\Toolbox\FIFA\BA\" & matchname & "Report.html' target='subframe'>" & matchname & "</a></li>"
+    Next
+    
+    Call replaceText(filecontent, "#matchlist", matchlist)
+    
+    Call replaceText(filecontent, "#matchname", matchname)
+    Call writehtmlfile(filename, filecontent)
+    Pause
+    Pause
+    Pause
+    Pause
+    Pause
+
+
+    Me.lab_reportstatus.Caption = "End"
+    
+End Sub
+
 Private Sub btn_deletecurrent_Click()
     
     If MsgBox("Are you sure you want to delete?", vbYesNo) = vbNo Then
@@ -13,36 +62,29 @@ End Sub
 
 Private Sub btn_fresh_Click()
     Me.com_match.Requery
+    Me.lst_matchlist.Requery
     
 End Sub
 
 Private Sub btn_report_Click()
     Dim matchname As String
     Dim matchtime As String
-    Dim category(0 To 6) As String
+
     Dim x As Integer
     
     Me.lab_report.Caption = "Starting....."
     
     matchname = DLookup("matchname", "tablebamatchlist", "id = " & Me.com_match)
     matchtime = Me.com_matchtime
-    category(0) = "Q1"
-    category(1) = "Q2"
-    category(2) = "Q3"
-    category(3) = "Q4"
-    category(4) = "H1"
-    category(5) = "H2"
-    category(6) = "Full"
+
     
     Debug.Print matchtime
     Debug.Print matchname
     
     If matchtime <> "All" Then
-        Call generate1stQreport(matchname, matchtime)
+        Call generate1stQreport(matchname, "All")
     Else
-        For x = 0 To UBound(category)
-            Call generate1stQreport(matchname, category(x))
-        Next
+        Call generate1stQreport(matchname, matchtime)
     End If
     
     Me.lab_report.Caption = "End"
@@ -66,14 +108,356 @@ Private Sub Command159_Click()
     
 End Sub
 
+Private Sub com_match_AfterUpdate()
+
+    Dim selection1 As String
+    Dim selection2 As String
+    Dim eventname As String
+    
+    Dim fH As Integer
+    Dim fA As Integer
+    Dim sh As Integer
+    Dim sA As Integer
+    Dim tH As Integer
+    Dim ta As Integer
+    Dim fuH As Integer
+    Dim fuA As Integer
+    Dim mt As String
+    
+    Dim q1tused, q2tused, q3tused, q4tused, h1tused, h2tused, ftused As Integer
+    Dim q1 As String
+    Dim q2 As String
+    Dim q3 As String
+    Dim q4 As String
+    Dim h1 As String
+    Dim h2 As String
+    Dim total As String
+    Dim aq1t As Double
+    Dim aq1h As Double
+    Dim aq1a As Double
+    
+    Dim aq2t As Double
+    Dim aq2h As Double
+    Dim aq2a As Double
+    
+    Dim aq3t As Double
+    Dim aq3h As Double
+    Dim aq3a As Double
+    
+    Dim aq4t As Double
+    Dim aq4h As Double
+    Dim aq4a As Double
+    
+    Dim ah1t As Double
+    Dim ah1h As Double
+    Dim ah1a As Double
+    
+    Dim ah2t As Double
+    Dim ah2h As Double
+    Dim ah2a As Double
+    
+    Dim atotalt As Double
+    Dim atotalh As Double
+    Dim atotala As Double
+    Dim sql As String
+    Dim rs As Recordset
+    Dim lastData As Double
+    Dim q4second As Integer
+    
+    Dim q1m, q2m, q3m, q4m, h1m, h2m, fm As String
+    Dim pq1m, pq2m, pq3m, pq4m, ph1m, ph2m, pfm As String
+    Dim q1time, q2time, q3time, q4time As String
+    Dim q1s, q1hs, q1as, q2s, q2hs, q2as, q3s, q3hs, q3as, q4s, q4hs, q4as, h1s, h1hs, h1as, h2s, h2hs, h2as, fs, fhs, fas As Integer
+    
+    Dim timerange As Integer
+    Dim rate As Integer
+    
+    Dim matchname As String
+    Dim matchtime As String
+    Dim category(0 To 6) As String
+    Dim x As Integer
+
+    
+    matchname = DLookup("matchname", "tablebamatchlist", "id = " & Me.com_match)
+    selection1 = DLookup("hometeam", "tablebamatchlist", "id = " & Me.com_match)
+    selection2 = DLookup("awayteam", "tablebamatchlist", "id = " & Me.com_match)
+    sql = "SELECT * FROM TableBADetails where EventName = '" & matchname & "' order by updatetime desc"
+    Debug.Print sql
+    
+    Set rs = CurrentDb.OpenRecordset(sql)
+
+    rs.MoveFirst
+    
+    Debug.Print matchtime
+    Debug.Print matchname
+    
+    Form_Form2.Text2 = rs.Fields("Q1TIME").Value
+    Form_Form2.Text3 = rs.Fields("Q2TIME").Value
+    Form_Form2.Text5 = rs.Fields("Q3TIME").Value
+    Form_Form2.Text6 = rs.Fields("Q4TIME").Value
+
+    Form_Form2.txt_hteam = selection1
+    Form_Form2.txt_ateam = selection2
+
+            
+    Form_Form2.Text18 = rs.Fields("q1hs").Value
+    Form_Form2.Text26 = rs.Fields("q1as").Value
+    Form_Form2.Text19 = rs.Fields("q2hs").Value
+    Form_Form2.Text27 = rs.Fields("q2as").Value
+    Form_Form2.Text21 = rs.Fields("q3hs").Value
+    Form_Form2.Text29 = rs.Fields("q3as").Value
+    Form_Form2.Text22 = rs.Fields("q4hs").Value
+    Form_Form2.Text30 = rs.Fields("q4as").Value
+        
+    Form_Form2.Text10 = ct(Form_Form2.Text2)
+    Form_Form2.Text11 = ct(Form_Form2.Text3)
+    Form_Form2.Text12 = Form_Form2.Text10 + Form_Form2.Text11
+    Form_Form2.Text13 = ct(Form_Form2.Text5)
+    Form_Form2.Text14 = ct(Form_Form2.Text6)
+    Form_Form2.Text15 = Form_Form2.Text13 + Form_Form2.Text14
+    Form_Form2.Text16 = Form_Form2.Text12 + Form_Form2.Text15
+
+    Form_Form2.Text20 = Form_Form2.Text18 + Form_Form2.Text19
+    Form_Form2.Text28 = Form_Form2.Text26 + Form_Form2.Text27
+    Form_Form2.Text23 = Form_Form2.Text21 + Form_Form2.Text22
+    Form_Form2.Text31 = Form_Form2.Text30 + Form_Form2.Text29
+    
+    Form_Form2.Text32 = Form_Form2.Text31 + Form_Form2.Text28
+    Form_Form2.Text24 = Form_Form2.Text23 + Form_Form2.Text20
+    
+    Form_Form2.Text34 = Form_Form2.Text18 + Form_Form2.Text26
+    Form_Form2.Text35 = Form_Form2.Text19 + Form_Form2.Text27
+    Form_Form2.Text36 = Form_Form2.Text20 + Form_Form2.Text28
+    Form_Form2.Text37 = Form_Form2.Text21 + Form_Form2.Text29
+    Form_Form2.Text38 = Form_Form2.Text22 + Form_Form2.Text30
+    Form_Form2.Text39 = Form_Form2.Text23 + Form_Form2.Text31
+    Form_Form2.Text40 = Form_Form2.Text24 + Form_Form2.Text32
+    
+    Form_Form2.Text42 = Form_Form2.Text18 - Form_Form2.Text26
+    Form_Form2.Text43 = Form_Form2.Text19 - Form_Form2.Text27
+    Form_Form2.Text44 = Form_Form2.Text20 - Form_Form2.Text28
+    Form_Form2.Text45 = Form_Form2.Text21 - Form_Form2.Text29
+    Form_Form2.Text46 = Form_Form2.Text22 - Form_Form2.Text30
+    Form_Form2.Text47 = Form_Form2.Text23 - Form_Form2.Text31
+    Form_Form2.Text48 = Form_Form2.Text24 - Form_Form2.Text32
+    
+    Form_Form2.Text50 = Form_Form2.com_time * 60 - Form_Form2.Text10
+    Form_Form2.Text51 = Form_Form2.com_time * 60 - Form_Form2.Text11
+    Form_Form2.Text52 = Form_Form2.com_time * 60 * 2 - Form_Form2.Text12
+    Form_Form2.Text53 = Form_Form2.com_time * 60 - Form_Form2.Text13
+    Form_Form2.Text54 = Form_Form2.com_time * 60 - Form_Form2.Text14
+    Form_Form2.Text55 = Form_Form2.com_time * 60 * 2 - Form_Form2.Text15
+    Form_Form2.Text56 = Form_Form2.com_time * 60 * 4 - Form_Form2.Text16
+    
+    Form_Form2.com_time = rs.Fields("Rate").Value / 60
+    
+    timerange = Form_Form2.com_time
+    
+    
+    rate = timerange * 60
+    'title = "AVG P" & vbNewLine & "Estimate P(Q1)" & vbNewLine & "Estimate P(Q2)" & vbNewLine & "Estimate P(H1)" & vbNewLine & "Estimate P(Q3)" & vbNewLine & "Estimate P(Q4)" & vbNewLine & "Estimate P(H2)" & vbNewLine & "Estimate P(Total)"
+    
+    If Form_Form2.Text50 = 0 Then
+        aq1t = 0
+        aq1h = 0
+        aq1a = 0
+    Else
+        aq1t = Form_Form2.Text34 / Form_Form2.Text50
+        aq1h = Form_Form2.Text18 / Form_Form2.Text50
+        aq1a = Form_Form2.Text26 / Form_Form2.Text50
+    End If
+    
+    If Form_Form2.Text51 = 0 Then
+        aq2t = 0
+        aq2h = 0
+        aq2a = 0
+    Else
+        aq2t = Form_Form2.Text35 / Form_Form2.Text51
+        aq2h = Form_Form2.Text19 / Form_Form2.Text51
+        aq2a = Form_Form2.Text27 / Form_Form2.Text51
+    End If
+    
+    If Form_Form2.Text52 = 0 Then
+        ah1t = 0
+        ah1h = 0
+        ah1a = 0
+    Else
+        ah1t = Form_Form2.Text36 / Form_Form2.Text52
+        ah1h = Form_Form2.Text20 / Form_Form2.Text52
+        ah1a = Form_Form2.Text28 / Form_Form2.Text52
+    End If
+    
+    If Form_Form2.Text53 = 0 Then
+        aq3t = 0
+        aq3h = 0
+        aq3a = 0
+    Else
+        aq3t = Form_Form2.Text37 / Form_Form2.Text53
+        aq3h = Form_Form2.Text21 / Form_Form2.Text53
+        aq3a = Form_Form2.Text29 / Form_Form2.Text53
+    End If
+
+    If Form_Form2.Text54 = 0 Then
+        aq4t = 0
+        aq4h = 0
+        aq4a = 0
+    Else
+        aq4t = Form_Form2.Text38 / Form_Form2.Text54
+        aq4h = Form_Form2.Text22 / Form_Form2.Text54
+        aq4a = Form_Form2.Text30 / Form_Form2.Text54
+    End If
+    
+    If Form_Form2.Text55 = 0 Then
+        ah2t = 0
+        ah2h = 0
+        ah2a = 0
+    Else
+        ah2t = Form_Form2.Text39 / Form_Form2.Text55
+        ah2h = Form_Form2.Text23 / Form_Form2.Text55
+        ah2a = Form_Form2.Text31 / Form_Form2.Text55
+    End If
+    
+    If Form_Form2.Text56 = 0 Then
+        atotalt = 0
+        atotalh = 0
+        atotala = 0
+    Else
+        atotalt = Form_Form2.Text40 / Form_Form2.Text56
+        atotalh = Form_Form2.Text24 / Form_Form2.Text56
+        atotala = Form_Form2.Text32 / Form_Form2.Text56
+    End If
+    
+    q1m = Nz(Form_Form2.txt_1stQ, "")
+    q2m = Nz(Form_Form2.txt_2ndQ, "")
+    q3m = Nz(Form_Form2.txt_3rdQ, "")
+    q4m = Nz(Form_Form2.txt_4thQ, "")
+    h1m = Nz(Form_Form2.txt_1stH, "")
+    h2m = Nz(Form_Form2.txt_2ndH, "")
+    fm = Nz(Form_Form2.txt_full, "")
+    
+    q1time = Form_Form2.Text2
+    q2time = Form_Form2.Text3
+    q3time = Form_Form2.Text5
+    q4time = Form_Form2.Text6
+    
+    q1hs = Form_Form2.Text18
+    q2hs = Form_Form2.Text19
+    h1hs = Form_Form2.Text20
+    q3hs = Form_Form2.Text21
+    q4hs = Form_Form2.Text22
+    h2hs = Form_Form2.Text23
+    fhs = Form_Form2.Text24
+    
+    q1as = Form_Form2.Text26
+    q2as = Form_Form2.Text27
+    h1as = Form_Form2.Text28
+    q3as = Form_Form2.Text29
+    q4as = Form_Form2.Text30
+    h2as = Form_Form2.Text31
+    fas = Form_Form2.Text32
+    
+    q1s = Form_Form2.Text34
+    q2s = Form_Form2.Text35
+    h1s = Form_Form2.Text36
+    q3s = Form_Form2.Text37
+    q4s = Form_Form2.Text38
+    h2s = Form_Form2.Text39
+    fs = Form_Form2.Text40
+    
+    q1tused = Form_Form2.Text50
+    q2tused = Form_Form2.Text51
+    h1tused = Form_Form2.Text52
+    q3tused = Form_Form2.Text53
+    q4tused = Form_Form2.Text54
+    h2tused = Form_Form2.Text55
+    ftused = Form_Form2.Text56
+    
+    q1 = Format(aq1t, "#.###") & ";" & Format(aq1h, "#.###") & ";" & Format(aq1a, "#.###") & ";" & " " & ";" & Format(aq1t * 60 * timerange, "###.#") & ";" & Format(aq1h * 60 * timerange, "###.#") & ";" & Format(aq1a * 60 * timerange, "###.#") & ";" & Format(aq1h * 60 * timerange - aq1a * 60 * timerange, "###.#")
+    Form_Form2.lst_1qResult.RowSource = q1
+    
+    q2 = Format(aq2t, "#.###") & ";" & Format(aq2h, "#.###") & ";" & Format(aq2a, "#.###") & ";" & " " & ";" & Format(aq2t * 60 * timerange, "###.#") & ";" & Format(aq2h * 60 * timerange, "###.#") & ";" & Format(aq2a * 60 * timerange, "###.#") & ";" & Format(aq2h * 60 * timerange - aq2a * 60 * timerange, "###.#") & ";" & " " & ";" & Format(ah1t * 60 * timerange, "###.#") & ";" & Format(ah1h * 60 * timerange, "###.#") & ";" & Format(ah1a * 60 * timerange, "###.#") & ";" & Format(ah1h * 60 * timerange - ah1a * 60 * timerange, "###.#")
+    Form_Form2.lst_2qResult.RowSource = q2
+    
+    h1 = Format(ah1t, "#.###") & ";" & Format(ah1h, "#.###") & ";" & Format(ah1a, "#.###") & ";" & " " & ";" & Format(ah1t * 120 * timerange, "###.#") & ";" & Format(ah1h * 120 * timerange, "###.#") & ";" & Format(ah1a * 120 * timerange, "###.#") & ";" & Format(ah1h * 120 * timerange - ah1a * 120 * timerange, "###.#") & ";" & " " & ";" & Format(aq2t * 60 * timerange + Form_Form2.Text34, "###.#") & ";" & Format(aq2h * 60 * timerange + Form_Form2.Text18, "###.#") & ";" & Format(aq2a * 60 * timerange + Form_Form2.Text26, "###.#") & ";" & Format((aq2h * 60 * timerange + Form_Form2.Text18) - (aq2a * 60 * timerange + Form_Form2.Text26), "###.#")
+    Form_Form2.lst_1hresult.RowSource = h1
+    
+    q3 = Format(aq3t, "#.###") & ";" & Format(aq3h, "#.###") & ";" & Format(aq3a, "#.###") & ";" & " " & ";" & Format(aq3t * 60 * timerange, "###.#") & ";" & Format(aq3h * 60 * timerange, "###.#") & ";" & Format(aq3a * 60 * timerange, "###.#") & ";" & Format(aq3h * 60 * timerange - aq3a * 60 * timerange, "###.#") & ";" & " " & ";" & Format(atotalt * 60 * timerange, "###.#") & ";" & Format(atotalh * 60 * timerange, "###.#") & ";" & Format(atotala * 60 * timerange, "###.#") & ";" & Format(atotalh * 60 * timerange - atotala * 60 * timerange, "###.#")
+    Form_Form2.lst_3qresult.RowSource = q3
+    
+    q4 = Format(aq4t, "#.###") & ";" & Format(aq4h, "#.###") & ";" & Format(aq4a, "#.###") & ";" & " " & ";" & Format(aq4t * 60 * timerange, "###.#") & ";" & Format(aq4h * 60 * timerange, "###.#") & ";" & Format(aq4a * 60 * timerange, "###.#") & ";" & Format(aq4h * 60 * timerange - aq4a * 60 * timerange, "###.#") & ";" & " " & ";" & Format(ah2t * 60 * timerange, "###.#") & ";" & Format(ah2h * 60 * timerange, "###.#") & ";" & Format(ah2a * 60 * timerange, "###.#") & ";" & Format(ah2h * 60 * timerange - ah2a * 60 * timerange, "###.#") & ";" & " " & ";" & Format(atotalt * 60 * timerange, "###.#") & ";" & Format(atotalh * 60 * timerange, "###.#") & ";" & Format(atotala * 60 * timerange, "###.#") & ";" & Format(atotalh * 60 * timerange - atotala * 60 * timerange, "###.#")
+    Form_Form2.lst_4qresult.RowSource = q4
+    
+    h2 = Format(ah2t, "#.###") & ";" & Format(ah2h, "#.###") & ";" & Format(ah2a, "#.###") & ";" & " " & ";" & Format(ah2t * 120 * timerange, "###.#") & ";" & Format(ah2h * 120 * timerange, "###.#") & ";" & Format(ah2a * 120 * timerange, "###.#") & ";" & Format(ah2h * 120 * timerange - ah2a * 120 * timerange, "###.#") & ";" & " " & ";" & Format(aq4t * 60 * timerange + Form_Form2.Text37, "###.#") & ";" & Format(aq4h * 60 * timerange + Form_Form2.Text21, "###.#") & ";" & Format(aq4a * 60 * timerange + Form_Form2.Text29, "###.#") & ";" & Format((aq4h * 60 * timerange + Form_Form2.Text21) - (aq4a * 60 * timerange + Form_Form2.Text29), "###.#") & ";" & " " & ";" & Format(atotalt * 120 * timerange, "###.#") & ";" & Format(atotalh * 120 * timerange, "###.#") & ";" & Format(atotala * 120 * timerange, "###.#") & ";" & Format(atotalh * 120 * timerange - atotala * 120 * timerange, "###.#")
+    Form_Form2.lst_2hresult.RowSource = h2
+
+    total = Format(atotalt, "#.###") & ";" & Format(atotalh, "#.###") & ";" & Format(atotala, "#.###") & ";" & " " & ";" & Format(atotalt * 240 * timerange, "###.#") & ";" & Format(atotalh * 240 * timerange, "###.#") & ";" & Format(atotala * 240 * timerange, "###.#") & ";" & Format(atotalh * 240 * timerange - atotala * 240 * timerange, "###.#") & ";" & " " & ";" & Format(aq4t * 60 * timerange + Form_Form2.Text37 + Form_Form2.Text36, "###.#") & ";" & Format(aq4h * 60 * timerange + Form_Form2.Text21 + Form_Form2.Text20, "###.#") & ";" & Format(aq4a * 60 * timerange + Form_Form2.Text29 + Form_Form2.Text28, "###.#") & ";" & Format((aq4h * 60 * timerange + Form_Form2.Text21 + Form_Form2.Text20) - (aq4a * 60 * timerange + Form_Form2.Text29 + Form_Form2.Text28), "###.#")
+    Form_Form2.lst_totalResult.RowSource = total
+    
+    Form_Form2.txt_1stQ = rs.Fields("Q1M").Value
+    Form_Form2.txt_2ndQ = rs.Fields("Q2M").Value
+    Form_Form2.txt_3rdQ = rs.Fields("Q3M").Value
+    Form_Form2.txt_4thQ = rs.Fields("Q4M").Value
+    Form_Form2.txt_1stH = rs.Fields("H1M").Value
+    Form_Form2.txt_2ndH = rs.Fields("H2M").Value
+    Form_Form2.txt_full = rs.Fields("FM").Value
+                        
+    rs.Close
+    Set rs = Nothing
+    
+    
+
+End Sub
+
 Private Sub Command223_Click()
+
+    Dim FSO As Object
+    Dim MyPath As String
+    Dim Filepath As String
+
+    
     If MsgBox("Are you sure you want to delete?", vbYesNo) = vbNo Then
         Exit Sub
     End If
     
     CurrentDb.Execute "delete * from TableBADetails"
+    CurrentDb.Execute "delete * from TableBAmatchList"
+    
+    Set FSO = CreateObject("scripting.filesystemobject")
+    
+    Filepath = "I:\Asian Support Department\Asian Customer Account Advisor\member files\FRM PC\Members files\Mingtao Zhang\Toolbox\FIFA\BA"
+
+    'x = 0
+    'i = 6
+    'Erase DataArr
+    FSO.DeleteFile Filepath & "\*.*", True
+    Set FSO = Nothing
+    
+
+    'strfile = Dir(Filepath & "\*")
+    'Do While Len(strfile) > 0
+    
+        'ReDim Preserve strimport(0 To x) As fileprop
+        'FileName = strfile
+        'sheetname = Left(FileName, InStr(1, FileName, ".csv", vbTextCompare) - 1)
+        'Debug.Print FileName, sheetname
+        'FSO.DeleteFile MyPath & "\*.*", True
+        
+        'Call DeleteFile(Filepath & "\" & strfile)
+        
+        'Debug.Print Filepath & "\" & strfile
+        'Kill Filepath & "\" & strfile
+
+        'strimport(x).strname = strfile
+        'trimport(x).filedate = oFS.GetFile(Filepath & strfile).DateLastModified
+        'i = i + 2
+        'x = x + 1
+        'strfile = Dir
+    'Loop
+    Me.com_match.Requery
+    Me.lst_matchlist.Requery
     
     MsgBox "data deleted."
+    
 End Sub
 
 Private Sub Form_Timer()
