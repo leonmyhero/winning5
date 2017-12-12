@@ -383,23 +383,23 @@ Sub traversebasketballmatchlist()
     Dim EventName As String
     Dim basket As String
     Dim quar As String
-    Dim timegap As Double
+    'Dim timegap As Double
     
     'Dim selection As String
     
     Dim shellApplication As Object, oWin As Object
 
     'On Error GoTo errorhandler
-    On Error Resume Next
+    'On Error Resume Next
     Debug.Print "start", Now()
     Debug.Print matchCount
     If matchCount = 0 Then
         matchCount = 1
     End If
-    timegap = matchCount * 3000
+    'timegap = matchCount * 3000
     
-    Debug.Print timegap
-    Form_Form2.TimerInterval = matchCount * 3000
+    Debug.Print matchCount * 2500
+    Form_Form2.TimerInterval = matchCount * 2500
     
     'Set obrowser = Form_Form2.WebBrowser0.Object
     Set shellApplication = CreateObject("Shell.Application")
@@ -472,27 +472,48 @@ Sub traversebasketballmatchlist()
                         BAList(y).hometeam = hometeam
                         BAList(y).matchstage = matchtime
                         BAList(y).matchtime = quartersecond
-                        If quartersecond = 600 Then
-                            BAList(y).category = 10
-                        ElseIf quartersecond > 600 Then
+
+                        If quartersecond > 600 Then
                             BAList(y).category = 12
                         Else
-                            BAList(y).category = 0
+                            BAList(y).category = 10
                         End If
                         em.Click
                         
-                        'Pause
-                        'Pause
-                        'Pause
-                        'Pause
-                        'Pause
-                        'Pause
-                        'Pause
-                        'Pause
-                        'Pause
-                        'Pause
-                        'Pause
+
                         Do While obrowser.ReadyState <> READYSTATE_COMPLETE: DoEvents: Loop
+                        
+                        If IsNull(DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(y).hometeam & "' and awayteam = '" & BAList(y).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'")) Then
+                            Set rs = CurrentDb.OpenRecordset("select * from tablebamatchlist where matchdatestr = '" & Format(Date, "short date") & "'")
+                                With rs
+                                .AddNew
+                                ![matchname] = BAList(y).hometeam & " v " & BAList(y).awayteam
+                                ![hometeam] = BAList(y).hometeam
+                                ![awayteam] = BAList(y).awayteam
+                                ![matchstage] = BAList(y).matchstage
+                                ![category] = BAList(y).category
+                                ![updatetimedate] = Now()
+                                ![matchdate] = Date
+                                ![matchDatestr] = Date
+                                .Update
+                                End With
+                            rs.Close
+                            Set rs = Nothing
+                            
+                            'selection1 = BAList(x).hometeam
+                            'selection2 = BAList(x).awayteam
+                        Else
+                            If DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(y).hometeam & "' and awayteam = '" & BAList(y).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = 10 And BAList(y).category = 12 Then
+                                CurrentDb.Execute "update tablebamatchlist set category = '" & BAList(y).category & "' where hometeam = '" & BAList(y).hometeam & "' and awayteam = '" & BAList(y).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'"
+                            End If
+                            'If DLookup("taken", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = False Then
+                            'selection1 = BAList(x).hometeam
+                            'selection2 = BAList(x).awayteam
+                            'ElseIf DLookup("takenby", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = machineID Then
+                            '    s1 = BAList(x).hometeam
+                            '    s2 = BAList(x).awayteam
+                            'End If
+                        End If
                         
                         'Do While ht.getElementsByClassName("ml18-ScoreHeader_AdditionalText")(0) Is Nothing: DoEvents: Loop
 
@@ -529,6 +550,7 @@ Sub traversebasketballmatchlist()
                         
                         'Debug.Print fH, fA, sH, sA, tH, ta, fuH, fuA
                         
+                        
                         Form_Form2.Text18 = fH
                         Form_Form2.Text26 = fA
                         Form_Form2.Text19 = sh
@@ -549,6 +571,8 @@ Sub traversebasketballmatchlist()
                             qno = Mid(qno, 3, 1)
                         End If
                         
+                        Form_Form2.com_time = DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(y).hometeam & "' and awayteam = '" & BAList(y).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'")
+
                         Select Case qno
                             Case "1"
                                 Form_Form2.Text2 = mt
@@ -895,53 +919,6 @@ Sub traversebasketballmatchlist()
     End If
     matchCount = y
     
-    If foundBAmatch Then
-    
-        'Set rs = CurrentDb.OpenRecordset("select * from tablebamatchlist where matchdatestr = '" & Format(Date, "short date") & "'")
-        selection1 = ""
-        selection2 = ""
-        's1 = ""
-        's2 = ""
-        'newMatch = False
-        For x = 0 To UBound(BAList)
-            'Debug.Print BAList(x).hometeam
-            
-            If IsNull(DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'")) Then
-                Set rs = CurrentDb.OpenRecordset("select * from tablebamatchlist where matchdatestr = '" & Format(Date, "short date") & "'")
-                    With rs
-                    .AddNew
-                    ![matchname] = BAList(x).hometeam & " v " & BAList(x).awayteam
-                    ![hometeam] = BAList(x).hometeam
-                    ![awayteam] = BAList(x).awayteam
-                    ![matchstage] = BAList(x).matchstage
-                    ![category] = BAList(x).category
-                    ![updatetimedate] = Now()
-                    ![matchdate] = Date
-                    ![matchDatestr] = Date
-                    .Update
-                    End With
-                rs.Close
-                Set rs = Nothing
-                
-                'selection1 = BAList(x).hometeam
-                'selection2 = BAList(x).awayteam
-            Else
-                If DLookup("category", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = 0 And BAList(x).category <> 0 Then
-                    CurrentDb.Execute "update tablebamatchlist set category = '" & BAList(x).category & "' where hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'"
-                End If
-                'If DLookup("taken", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = False Then
-                'selection1 = BAList(x).hometeam
-                'selection2 = BAList(x).awayteam
-                'ElseIf DLookup("takenby", "tablebamatchlist", "hometeam = '" & BAList(x).hometeam & "' and awayteam = '" & BAList(x).awayteam & "' and matchdatestr = '" & Format(Date, "short date") & "'") = machineID Then
-                '    s1 = BAList(x).hometeam
-                '    s2 = BAList(x).awayteam
-                'End If
-            End If
-        Next
-        'Debug.Print selection1, selection2
-        
-        'Call selectmatch(selection1, selection2)
-    End If
     
     'If s1 <> "" And s2 <> "" Then
     '    newMatch = False
