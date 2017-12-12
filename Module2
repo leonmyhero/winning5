@@ -1113,7 +1113,7 @@ Sub catchdata()
     Dim em As String
     Dim lm As String
     Dim qno As String
-    Dim EventName As String
+    Dim eventname As String
     Dim status As String
     Dim selection1 As String
     Dim selection2 As String
@@ -1217,7 +1217,7 @@ Sub catchdata()
     Form_Form2.txt_hteam = ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(0).innerText
     Form_Form2.txt_ateam = ht.getElementsByClassName("ipe-ScoreGridCell_TextTeamName")(1).innerText
     
-    EventName = Form_Form2.txt_hteam & " v " & Form_Form2.txt_ateam
+    eventname = Form_Form2.txt_hteam & " v " & Form_Form2.txt_ateam
     
     If Len(qno) = 2 Then
         qno = Mid(qno, 2, 1)
@@ -1248,13 +1248,13 @@ Sub catchdata()
             Form_Form2.Text6 = mt
     End Select
     
-    Call calculation(EventName)
+    Call calculation(eventname)
     Exit Sub
 errorhandler:
     Debug.Print Err.Number, Err.Description
     
 End Sub
-Sub Estimation(EventName As String)
+Sub Estimation(eventname As String)
     Dim q1spread, q2spread, q3spread, q4spread, h1spread, h2spread, fspread As Single
     Dim q1tpoint, q1hpoint, q1apoint, q2tpoint, q2hpoint, q2apoint, q3tpoint, q3hpoint, q3apoint, q4tpoint, q4hpoint, q4apoint, h1tpoint, h1hpoint, h1apoint, h2tpoint, h2hpoint, h2apoint, ftpoint, fhpoint, fapoint As Single
     'q1spread = 0
@@ -1457,7 +1457,7 @@ Sub Estimation(EventName As String)
     
     Call fetchBasketballOdds(q1spread, q2spread, q3spread, q4spread, h1spread, h2spread, fspread, q1tpoint, q1hpoint, q1apoint, q2tpoint, q2hpoint, q2apoint, q3tpoint, q3hpoint, q3apoint, q4tpoint, q4hpoint, q4apoint, h1tpoint, h1hpoint, h1apoint, h2tpoint, h2hpoint, h2apoint, ftpoint, fhpoint, fapoint)
     
-    Set rs = CurrentDb.OpenRecordset("select top 1 * from TableBADetails where eventname = '" & EventName & "' order by updatetime DESC")
+    Set rs = CurrentDb.OpenRecordset("select top 1 * from TableBADetails where eventname = '" & eventname & "' order by updatetime DESC")
 '
     If rs.RecordCount > 0 Then
     
@@ -1479,7 +1479,7 @@ Sub Estimation(EventName As String)
             With rs
                 .AddNew
                 ![eventdate] = Date
-                ![EventName] = EventName
+                ![eventname] = eventname
                 ![q1t] = aq1t * 60 * timerange
                 ![q1h] = aq1h * 60 * timerange
                 ![q1a] = aq1a * 60 * timerange
@@ -1613,7 +1613,7 @@ Sub Estimation(EventName As String)
         With rs
             .AddNew
             ![eventdate] = Date
-            ![EventName] = EventName
+            ![eventname] = eventname
                 ![q1t] = aq1t * 60 * timerange
                 ![q1h] = aq1h * 60 * timerange
                 ![q1a] = aq1a * 60 * timerange
@@ -1736,7 +1736,7 @@ Sub Estimation(EventName As String)
     
 End Sub
 
-Sub calculation(EventName As String)
+Sub calculation(eventname As String)
 
     Dim s As Integer
     
@@ -1796,7 +1796,7 @@ Sub calculation(EventName As String)
     'Form_Form2.Text103 = Form_Form2.com_time * 60 * 2 * Form_Form2.Text79
     'Form_Form2.Text104 = Form_Form2.com_time * 60 * 4 * Form_Form2.Text80
     
-    Call Estimation(EventName)
+    Call Estimation(eventname)
     'fetchBasketballOdds
     
 End Sub
@@ -1883,7 +1883,7 @@ Sub fetchBasketballMarkets()
     Set rs = Nothing
     
 End Sub
-Sub calculation2(EventName As String, q1spread, q2spread, q3spread, q4spread, h1spread, h2spread, fspread, q1tpoint, q1hpoint, q1apoint, q2tpoint, q2hpoint, q2apoint, q3tpoint, q3hpoint, q3apoint, q4tpoint, q4hpoint, q4apoint, h1tpoint, h1hpoint, h1apoint, h2tpoint, h2hpoint, h2apoint, ftpoint, fhpoint, fapoint As Single)
+Sub calculation2(eventname As String, q1spread, q2spread, q3spread, q4spread, h1spread, h2spread, fspread, q1tpoint, q1hpoint, q1apoint, q2tpoint, q2hpoint, q2apoint, q3tpoint, q3hpoint, q3apoint, q4tpoint, q4hpoint, q4apoint, h1tpoint, h1hpoint, h1apoint, h2tpoint, h2hpoint, h2apoint, ftpoint, fhpoint, fapoint As Single)
     Dim s As Integer
     
     Form_Form2.Text10 = ct(Form_Form2.Text2)
@@ -2147,7 +2147,7 @@ Sub calculation2(EventName As String, q1spread, q2spread, q3spread, q4spread, h1
     
     'Call fetchBasketballOdds(q1spread, q2spread, q3spread, q4spread, h1spread, h2spread, fspread, q1tpoint, q1hpoint, q1apoint, q2tpoint, q2hpoint, q2apoint, q3tpoint, q3hpoint, q3apoint, q4tpoint, q4hpoint, q4apoint, h1tpoint, h1hpoint, h1apoint, h2tpoint, h2hpoint, h2apoint, ftpoint, fhpoint, fapoint)
     
-    Set rs = CurrentDb.OpenRecordset("select top 1 * from TableBADetails where eventname = '" & EventName & "' order by updatetime DESC")
+    Set rs = CurrentDb.OpenRecordset("select top 1 * from TableBADetails where eventname = '" & eventname & "' order by updatetime DESC")
 '
     If rs.RecordCount > 0 Then
     
@@ -2169,7 +2169,7 @@ Sub calculation2(EventName As String, q1spread, q2spread, q3spread, q4spread, h1
             With rs
                 .AddNew
                 ![eventdate] = Date
-                ![EventName] = EventName
+                ![eventname] = eventname
                 ![q1t] = aq1t * 60 * timerange
                 ![q1h] = aq1h * 60 * timerange
                 ![q1a] = aq1a * 60 * timerange
@@ -2303,7 +2303,7 @@ Sub calculation2(EventName As String, q1spread, q2spread, q3spread, q4spread, h1
         With rs
             .AddNew
             ![eventdate] = Date
-            ![EventName] = EventName
+            ![eventname] = eventname
                 ![q1t] = aq1t * 60 * timerange
                 ![q1h] = aq1h * 60 * timerange
                 ![q1a] = aq1a * 60 * timerange
