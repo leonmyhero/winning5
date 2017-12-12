@@ -141,7 +141,7 @@ End Sub
 Sub matchtournametsearch(matchdate As String)
 
     Dim rs As Recordset
-    Dim EventName As String
+    Dim eventname As String
     Dim country As String
     Dim tournament As String
     Dim obrowser As WebBrowser
@@ -298,7 +298,7 @@ Sub getLiveScoreUrl(eventdate As Date)
                 .AddNew
                 ![eventdate] = eventdate
                 ![eventdatestr] = eventdate
-                ![EventName] = fixtures(x).hteam & " v " & fixtures(x).hteam
+                ![eventname] = fixtures(x).hteam & " v " & fixtures(x).hteam
                 ![eventcountry] = fixtures(x).country
                 ![EventTournament] = fixtures(x).tournament
                 ![eventid] = fixtures(x).eventid
