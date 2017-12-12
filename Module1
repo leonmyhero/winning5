@@ -440,7 +440,7 @@ End Sub
 Sub removeRedundantData(ByRef initialarray() As datamatrix)
 
     On Error Resume Next
-    
+    'Debug.Print "remove redundant"
     Dim newArray() As datamatrix
     Dim i As Integer
     Dim j As Integer
@@ -449,17 +449,19 @@ Sub removeRedundantData(ByRef initialarray() As datamatrix)
         For j = 0 To UBound(initialarray)
             If Not initialarray(i).es = 0 Then
                 If Not j = i Then
+                    'If initialarray(i) = initialarray(j) Then
                     If initialarray(i).es = initialarray(j).es And initialarray(i).qt = initialarray(j).qt And initialarray(i).eqt = initialarray(j).eqt And initialarray(i).mt = initialarray(j).mt Then
                         initialarray(j).es = 0
                     End If
                 End If
             End If
-    Next
+        Next
     Next
     
     j = 0
     For i = 0 To UBound(initialarray)
         If Not initialarray(i).es = 0 Then
+            'Debug.Print initialarray(i).es
             ReDim Preserve newArray(j)
             newArray(j) = initialarray(i)
             j = j + 1
