@@ -1,0 +1,53 @@
+@ECHO off
+SETLOCAL EnableDelayedExpansion
+SETLOCAL ENABLEDELAYEDEXPANSION
+
+title Test
+set "dir1=I:\Asian Support Department\Asian Customer Account Advisor\member files\FRM PC\Members files\Mingtao Zhang\youTool2.0\Wallpaper"
+set "dir2=I:\Asian Support Department\Asian Customer Account Advisor\member files\FRM PC\Members files\Mingtao Zhang\Temp"
+
+:Start
+cls
+echo 1. test loop
+echo 2. test1
+echo 3. test2
+echo 4. Quit
+set /p choice=I choose (1,2,3,4):
+if %choice%==1 goto test
+if %choice%==2 goto test1
+if %choice%==3 goto test2
+if %choice%==4 exit
+
+:test
+cls
+echo running loop test 
+FOR %%X in ("%dir1%\*.jpg") DO (
+set temps=%%~nX
+echo !temp:~0,7!
+echo %%~nX
+set "name = %dir2%\%name1%.jepg"
+echo %name%
+copy "%%X" "%dir2%\%%~nX.jpeg"
+)
+echo Done
+pause
+
+:test1
+cls
+set location=bob
+echo We're working with %location%
+pause
+
+:test2
+set Today=%DATE:~0,3%
+Echo  The day of the week is %Today%
+If exist U:\%Today% rd U:\%Today% /s /q
+md U:\%Today%
+pause
+
+The %%~dpnX is for expanding the filename of %%X to
+d=drive(C:)
+p=path(\Users\Family\Desktop\Example)
+n=filename(test1) (without extension)
+
+f=full filename(C:\Users\Family\Desktop\Example\test1.txt).
