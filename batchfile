@@ -89,3 +89,21 @@ subprocess.call('ffmpeg -r 10 -i %s frame%03.d.png - r ntsc movie.mpg')
 cmd = 'ffmpeg -r 10 -i "frame%%03d.png" -r ntsc "%s"' % moviename
 
 subprocess.call('ffmpeg -r 10 -i frame%03d.png -r ntsc '+str(out_movie), shell=True)
+
+ffmpeg -i still.png -i narrate.wav -acodec libvo_aacenc -vcodec libx264 final.flv
+
+ffmpeg -loop 1 -shortest -y -i image.jpg -i audio.mp3 -acodec copy -vcodec libx264 video.avi
+
+ffmpeg -r 1 -loop 1 -i ep1.jpg -i ep1.wav -acodec copy -r 1 -shortest -vf scale=1280:720 ep1.flv
+
+ffmpeg -loop 1 -i img.jpg -i audio.wav -c:v libx264 -c:a aac -strict experimental -b:a 192k -shortest out.mp4
+
+@echo off
+ set "sourcedir=C:\Users\CodeHard\Desktop\BOX\Newfolder"  
+ set "outputdir=C:\Users\CodeHard\Desktop\BOX\Converted" 
+
+ PUSHD "%sourcedir%"
+
+ for %%F in (*.mp3) DO ffmpeg -r 1 -loop 1 -i abc.jpeg -i "%%F" -acodec copy -r 1 -shortest -vf scale=1280:720 "%outputdir%\%%F.avi"  
+
+ POPD
