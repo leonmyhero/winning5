@@ -107,3 +107,24 @@ ffmpeg -loop 1 -i img.jpg -i audio.wav -c:v libx264 -c:a aac -strict experimenta
  for %%F in (*.mp3) DO ffmpeg -r 1 -loop 1 -i abc.jpeg -i "%%F" -acodec copy -r 1 -shortest -vf scale=1280:720 "%outputdir%\%%F.avi"  
 
  POPD
+
+import os
+import subprocess
+
+import sys
+
+rootdir = "I:\Temp"
+
+for subdir, dirs, files in os.walk(rootdir):
+    for file in files:
+        #print os.path.join(subdir, file)
+        filepath = subdir + os.sep + file
+        filepath = file
+        if filepath.endswith(".jpg"):
+            #print (subdir)
+            #print (os.path.splitext(filepath)[0])
+            newname = file + ".jpg"
+            #print (newname[4:15])
+            #newname = newname[4:15]
+            #print (newname)
+            os.rename(subdir + os.sep + file, subdir + os.sep + newname)
